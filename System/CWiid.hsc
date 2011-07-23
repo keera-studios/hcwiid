@@ -1,6 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module System.CWiid (cwiidOpen, cwiidSetLed) where
+module System.CWiid (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidGetState,
+                     CWiidState(..), CWiidWiimote(..)) where
 
 -- import Foreign.C.Error
 import Foreign.C.Types
@@ -42,21 +43,38 @@ instance Storable CWiidBdaddr where
 newtype CWiidWiimote = CWiidWiimote (Ptr CWiidWiimote)
 
 {--
-union cwiid_mesg {
-        enum cwiid_mesg_type type;
-        struct cwiid_status_mesg status_mesg;
-        struct cwiid_btn_mesg btn_mesg;
-        struct cwiid_acc_mesg acc_mesg;
-        struct cwiid_ir_mesg ir_mesg;
-        struct cwiid_nunchuk_mesg nunchuk_mesg;
-        struct cwiid_classic_mesg classic_mesg;
-        struct cwiid_balance_mesg balance_mesg;
-        struct cwiid_motionplus_mesg motionplus_mesg;
-        struct cwiid_error_mesg error_mesg;
+struct cwiid_state {
+        uint8_t rpt_mode;
+        uint8_t led;
+        uint8_t rumble;
+        uint8_t battery;
+        uint16_t buttons;
+        uint8_t acc[3];
+        struct cwiid_ir_src ir_src[CWIID_IR_SRC_COUNT];
+        enum cwiid_ext_type ext_type;
+        union ext_state ext;
+        enum cwiid_error error;
 };
 --}
-
-
+data CWiidState = CWiidState { rptMode :: Int, led :: Int, rumble :: Int, 
+                               battery :: Int, buttons :: Int } -- xxx 定義不足
+                deriving Show
+instance Storable CWiidState where
+  sizeOf = const #size struct cwiid_state
+  alignment = sizeOf
+  poke cwst (CWiidState rp l ru ba bu) = do
+    (#poke struct cwiid_state, rpt_mode) cwst rp
+    (#poke struct cwiid_state, led) cwst l
+    (#poke struct cwiid_state, rumble) cwst ru
+    (#poke struct cwiid_state, battery) cwst ba
+    (#poke struct cwiid_state, buttons) cwst bu
+  peek cwst = do
+    rp <- (#peek struct cwiid_state, rpt_mode) cwst
+    l <- (#peek struct cwiid_state, led) cwst
+    ru <- (#peek struct cwiid_state, rumble) cwst
+    ba <- (#peek struct cwiid_state, battery) cwst
+    bu <- (#peek struct cwiid_state, buttons) cwst
+    return $ CWiidState rp l ru ba bu
 
 -----------------------------------------------------------------------------
 -- Haskell land
@@ -69,7 +87,16 @@ cwiidOpen =
     c_cwiid_open bdAddr 0 -- エラー処理必要
 
 cwiidSetLed :: CWiidWiimote -> IO CInt
-cwiidSetLed wm = c_cwiid_set_led wm 1
+cwiidSetLed wm = c_cwiid_set_led wm 9 -- set on LED 1 and 4
+
+cwiidSetRptMode :: CWiidWiimote -> IO CInt
+cwiidSetRptMode wm = c_cwiid_set_rpt_mode wm 2 -- set BTN
+
+cwiidGetState :: CWiidWiimote -> IO CWiidState
+cwiidGetState wm =
+  alloca $ \wiState -> do
+    _ <- c_cwiid_get_state wm wiState
+    peek wiState
 
 -----------------------------------------------------------------------------
 -- C land
@@ -79,14 +106,20 @@ cwiidSetLed wm = c_cwiid_set_led wm 1
 
 -- cwiid_wiimote_t *cwiid_open(bdaddr_t *bdaddr, int flags)
 foreign import ccall safe "cwiid_open" c_cwiid_open
-  :: Ptr a -> CInt -> IO CWiidWiimote
---  :: Ptr (#type bdaddr_t) -> CInt -> IO (Ptr (#type cwiid_wiimote_t))
+  :: Ptr CWiidBdaddr -> CInt -> IO CWiidWiimote
 
 -- typedef unsigned char             uint8_t
 -- int cwiid_set_led(cwiid_wiimote_t *wiimote, uint8_t led)
 foreign import ccall safe "cwiid_set_led" c_cwiid_set_led
   :: CWiidWiimote -> CUChar -> IO CInt
---  :: Ptr (#type cwiid_wiimote_t) -> CUChar -> IO (CInt)
+
+-- int cwiid_set_rpt_mode(cwiid_wiimote_t *wiimote, uint8_t rpt_mode);
+foreign import ccall safe "cwiid_set_rpt_mode" c_cwiid_set_rpt_mode
+  :: CWiidWiimote -> CUChar -> IO CInt
+
+-- int cwiid_get_state(cwiid_wiimote_t *wiimote, struct cwiid_state *state);
+foreign import ccall safe "cwiid_get_state" c_cwiid_get_state
+  :: CWiidWiimote -> Ptr CWiidState -> IO CInt
 
 
 -- C => Haskell
@@ -95,7 +128,6 @@ foreign import ccall safe "cwiid_set_led" c_cwiid_set_led
 -- int cwiid_set_mesg_callback(cwiid_wiimote_t *wiimote,
 --                             cwiid_mesg_callback_t *callback)
 -- xxxxx
-
 -- typedef void cwiid_mesg_callback_t(cwiid_wiimote_t *, int,
 --                                    union cwiid_mesg [], struct timespec *)
 -- xxxxx
