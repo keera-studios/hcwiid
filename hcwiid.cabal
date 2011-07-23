@@ -17,11 +17,14 @@ Build-Type:             Simple
 Library
   GHC-Options:          -Wall
   Exposed-Modules:      System.CWiid
-  Build-Depends:        base >= 4 && < 5
+  Build-Depends:        base >= 4 && < 5, unix
   Includes:             cwiid.h
   Include-Dirs:         /usr/include, /usr/local/include, .
   Extra-Libraries:      bluetooth, cwiid
-  Extra-Lib-Dirs:       /usr/local/lib
+  Extra-Lib-Dirs:       /usr/lib, /usr/local/lib
+  -- machine switch
+  if os(linux)
+    CPP-Options:        -DOS_Linux
  
 Source-Repository head
   Type:                 git
