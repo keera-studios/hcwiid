@@ -13,6 +13,5 @@ main = do
   _ <- cwiidSetLed wm
   _ <- cwiidSetRptMode wm
   _ <- forever $ do _ <- usleep 200
-                    ws <- cwiidGetState wm
-                    print $ buttons ws
+                    cwiidGetBtnState wm >>= print
   return () -- not reach

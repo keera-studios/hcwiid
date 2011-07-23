@@ -1,9 +1,12 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module System.CWiid (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidGetState,
+module System.CWiid (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidGetBtnState,
+                     cwiidLed1, cwiidLed2, cwiidLed3, cwiidLed4,
+                     combineCwiidLedFlag,
                      CWiidState(..), CWiidWiimote(..)) where
 
 -- import Foreign.C.Error
+import Data.Bits
 import Foreign.C.Types
 import Foreign.Marshal
 import Foreign.Ptr
@@ -56,6 +59,17 @@ struct cwiid_state {
         enum cwiid_error error;
 };
 --}
+newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
+                     deriving (Eq, Show)
+#{enum CWiidLedFlag, CWiidLedFlag
+ , cwiidLed1 = CWIID_LED1_ON
+ , cwiidLed2 = CWIID_LED2_ON
+ , cwiidLed3 = CWIID_LED3_ON
+ , cwiidLed4 = CWIID_LED4_ON
+ }
+combineCwiidLedFlag :: [CWiidLedFlag] -> CWiidLedFlag
+combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
+
 data CWiidState = CWiidState { rptMode :: Int, led :: Int, rumble :: Int, 
                                battery :: Int, buttons :: Int } -- xxx 定義不足
                 deriving Show
@@ -92,11 +106,12 @@ cwiidSetLed wm = c_cwiid_set_led wm 9 -- set on LED 1 and 4
 cwiidSetRptMode :: CWiidWiimote -> IO CInt
 cwiidSetRptMode wm = c_cwiid_set_rpt_mode wm 2 -- set BTN
 
-cwiidGetState :: CWiidWiimote -> IO CWiidState
-cwiidGetState wm =
+cwiidGetBtnState :: CWiidWiimote -> IO CWiidLedFlag
+cwiidGetBtnState wm =
   alloca $ \wiState -> do
     _ <- c_cwiid_get_state wm wiState
-    peek wiState
+    ws <- peek wiState
+    return $ CWiidLedFlag $ buttons ws
 
 -----------------------------------------------------------------------------
 -- C land
