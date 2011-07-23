@@ -1,9 +1,12 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module System.CWiid (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidGetBtnState,
-                     cwiidLed1, cwiidLed2, cwiidLed3, cwiidLed4,
-                     combineCwiidLedFlag,
-                     CWiidState(..), CWiidWiimote(..)) where
+module System.CWiid
+       (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidGetBtnState,
+        cwiidLed1, cwiidLed2, cwiidLed3, cwiidLed4, combineCwiidLedFlag,
+        cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
+        cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
+        cwiidBtnPlus, combineCwiidBtnFlag, diffCwiidBtnFlag,
+        CWiidBtnFlag(..), CWiidState(..), CWiidWiimote(..)) where
 
 -- import Foreign.C.Error
 import Data.Bits
@@ -70,6 +73,28 @@ newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
 combineCwiidLedFlag :: [CWiidLedFlag] -> CWiidLedFlag
 combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
 
+newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: Int }
+                     deriving (Eq, Show)
+#{enum CWiidBtnFlag, CWiidBtnFlag
+ , cwiidBtn2     = CWIID_BTN_2
+ , cwiidBtn1     = CWIID_BTN_1
+ , cwiidBtnB     = CWIID_BTN_B
+ , cwiidBtnA     = CWIID_BTN_A
+ , cwiidBtnMinus = CWIID_BTN_MINUS
+ , cwiidBtnHome  = CWIID_BTN_HOME
+ , cwiidBtnLeft  = CWIID_BTN_LEFT
+ , cwiidBtnRight = CWIID_BTN_RIGHT
+ , cwiidBtnDown  = CWIID_BTN_DOWN
+ , cwiidBtnUp    = CWIID_BTN_UP
+ , cwiidBtnPlus  = CWIID_BTN_PLUS
+ }
+combineCwiidBtnFlag :: [CWiidBtnFlag] -> CWiidBtnFlag
+combineCwiidBtnFlag = CWiidBtnFlag . foldr ((.|.) . unCWiidBtnFlag) 0
+diffCwiidBtnFlag :: CWiidBtnFlag -> CWiidBtnFlag -> CWiidBtnFlag
+diffCwiidBtnFlag a b = CWiidBtnFlag $ ai - (ai .&. bi)
+  where ai = unCWiidBtnFlag a
+        bi = unCWiidBtnFlag b
+
 data CWiidState = CWiidState { rptMode :: Int, led :: Int, rumble :: Int, 
                                battery :: Int, buttons :: Int } -- xxx 定義不足
                 deriving Show
@@ -106,12 +131,12 @@ cwiidSetLed wm = c_cwiid_set_led wm 9 -- set on LED 1 and 4
 cwiidSetRptMode :: CWiidWiimote -> IO CInt
 cwiidSetRptMode wm = c_cwiid_set_rpt_mode wm 2 -- set BTN
 
-cwiidGetBtnState :: CWiidWiimote -> IO CWiidLedFlag
+cwiidGetBtnState :: CWiidWiimote -> IO CWiidBtnFlag
 cwiidGetBtnState wm =
   alloca $ \wiState -> do
     _ <- c_cwiid_get_state wm wiState
     ws <- peek wiState
-    return $ CWiidLedFlag $ buttons ws
+    return $ CWiidBtnFlag $ buttons ws
 
 -----------------------------------------------------------------------------
 -- C land
