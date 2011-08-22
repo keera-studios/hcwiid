@@ -119,11 +119,14 @@ instance Storable CWiidState where
 -- Haskell land
 ---
 -- wiimote = cwiid_open(&bdaddr, 0)))
-cwiidOpen :: IO CWiidWiimote
+cwiidOpen :: IO (Maybe CWiidWiimote)
 cwiidOpen =
   alloca $ \bdAddr -> do
     poke bdAddr $ CWiidBdaddr 0 0 0 0 0 0
-    c_cwiid_open bdAddr 0 -- エラー処理必要
+    handle <- c_cwiid_open bdAddr 0 -- エラー処理必要
+    case handle of
+        nullPtr -> return Nothing
+        otherwise -> return $ Just handle
 
 cwiidSetLed :: CWiidWiimote -> IO CInt
 cwiidSetLed wm = c_cwiid_set_led wm 9 -- set on LED 1 and 4
