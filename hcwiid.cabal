@@ -13,6 +13,8 @@ Category:               System
 Stability:              Experimental
 Cabal-Version:          >= 1.6
 Build-Type:             Simple
+Homepage:               https://gitorious.org/hcwiid
+Tested-with:            GHC == 7.0.4
 
 Library
   GHC-Options:          -Wall
