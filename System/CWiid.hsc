@@ -6,7 +6,7 @@ module System.CWiid
         cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
         cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
         cwiidBtnPlus, combineCwiidBtnFlag, diffCwiidBtnFlag,
-        CWiidBtnFlag(..), CWiidState(..), CWiidWiimote(..)) where
+        CWiidBtnFlag(..), CWiidState(..), CWiidWiimote) where
 
 -- import Foreign.C.Error
 import Data.Bits
@@ -46,7 +46,7 @@ instance Storable CWiidBdaddr where
     return $ CWiidBdaddr b0 b1 b2 b3 b4 b5
 
 -- typedef struct wiimote cwiid_wiimote_t;
-newtype CWiidWiimote = CWiidWiimote (Ptr CWiidWiimote)
+newtype CWiidWiimote = CWiidWiimote { unCWiidWiimote :: Ptr () }
 
 {--
 struct cwiid_state {
@@ -124,22 +124,25 @@ cwiidOpen =
   alloca $ \bdAddr -> do
     poke bdAddr $ CWiidBdaddr 0 0 0 0 0 0
     handle <- c_cwiid_open bdAddr 0 -- エラー処理必要
-    case handle of
-        nullPtr -> return Nothing
-        otherwise -> return $ Just handle
+    if handle == nullPtr
+      then return Nothing
+      else return $ Just $ CWiidWiimote handle
 
 cwiidSetLed :: CWiidWiimote -> IO CInt
-cwiidSetLed wm = c_cwiid_set_led wm 9 -- set on LED 1 and 4
+cwiidSetLed wm = c_cwiid_set_led  handle 9 -- set on LED 1 and 4
+  where handle = unCWiidWiimote wm
 
 cwiidSetRptMode :: CWiidWiimote -> IO CInt
-cwiidSetRptMode wm = c_cwiid_set_rpt_mode wm 2 -- set BTN
+cwiidSetRptMode wm = c_cwiid_set_rpt_mode handle 2 -- set BTN
+  where handle = unCWiidWiimote wm
 
 cwiidGetBtnState :: CWiidWiimote -> IO CWiidBtnFlag
 cwiidGetBtnState wm =
   alloca $ \wiState -> do
-    _ <- c_cwiid_get_state wm wiState
+    _ <- c_cwiid_get_state handle wiState
     ws <- peek wiState
     return $ CWiidBtnFlag $ buttons ws
+      where handle = unCWiidWiimote wm
 
 -----------------------------------------------------------------------------
 -- C land
@@ -149,20 +152,20 @@ cwiidGetBtnState wm =
 
 -- cwiid_wiimote_t *cwiid_open(bdaddr_t *bdaddr, int flags)
 foreign import ccall safe "cwiid_open" c_cwiid_open
-  :: Ptr CWiidBdaddr -> CInt -> IO CWiidWiimote
+  :: Ptr CWiidBdaddr -> CInt -> IO (Ptr ())
 
 -- typedef unsigned char             uint8_t
 -- int cwiid_set_led(cwiid_wiimote_t *wiimote, uint8_t led)
 foreign import ccall safe "cwiid_set_led" c_cwiid_set_led
-  :: CWiidWiimote -> CUChar -> IO CInt
+  :: Ptr () -> CUChar -> IO CInt
 
 -- int cwiid_set_rpt_mode(cwiid_wiimote_t *wiimote, uint8_t rpt_mode);
 foreign import ccall safe "cwiid_set_rpt_mode" c_cwiid_set_rpt_mode
-  :: CWiidWiimote -> CUChar -> IO CInt
+  :: Ptr () -> CUChar -> IO CInt
 
 -- int cwiid_get_state(cwiid_wiimote_t *wiimote, struct cwiid_state *state);
 foreign import ccall safe "cwiid_get_state" c_cwiid_get_state
-  :: CWiidWiimote -> Ptr CWiidState -> IO CInt
+  :: Ptr () -> Ptr CWiidState -> IO CInt
 
 
 -- C => Haskell
