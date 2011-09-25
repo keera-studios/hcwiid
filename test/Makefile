@@ -1,13 +1,16 @@
-all: Test
+all: Test TestMesg
 
 Test: Test.hs
 	ghc --make -Wall Test.hs -o Test
 
-lint: Test.hs
-	hlint -c Test.hs
+TestMesg: TestMesg.hs
+	ghc --make -Wall TestMesg.hs -o TestMesg
+
+lint:
+	hlint -c *.hs
 
 clean:
-	rm -rf Test
+	rm -rf Test TestMesg
 	rm -rf *.hi *.o
 	rm -rf *~
 

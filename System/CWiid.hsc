@@ -6,6 +6,7 @@ module System.CWiid
         cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
         cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
         cwiidBtnPlus, combineCwiidBtnFlag, diffCwiidBtnFlag,
+        cwiidEnable, cwiidGetMesg,
         CWiidBtnFlag(..), CWiidState(..), CWiidWiimote) where
 
 -- import Foreign.C.Error
@@ -25,7 +26,7 @@ import Foreign.Storable
 --         uint8_t b[6];
 -- } __attribute__((packed)) bdaddr_t;
 -- #define BDADDR_ANY   (&(bdaddr_t) {{0, 0, 0, 0, 0, 0}})
-data CWiidBdaddr = CWiidBdaddr Int Int Int Int Int Int
+data CWiidBdaddr = CWiidBdaddr CInt CInt CInt CInt CInt CInt
 instance Storable CWiidBdaddr where
   sizeOf = const #size bdaddr_t
   alignment = sizeOf
@@ -62,7 +63,7 @@ struct cwiid_state {
         enum cwiid_error error;
 };
 --}
-newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
+newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: CInt }
                      deriving (Eq, Show)
 #{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed1 = CWIID_LED1_ON
@@ -73,7 +74,19 @@ newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
 combineCwiidLedFlag :: [CWiidLedFlag] -> CWiidLedFlag
 combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
 
-newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: Int }
+newtype CWiidEnableFlag = CWiidEnableFlag { unCWiidEnableFlag :: CInt }
+                     deriving (Eq, Show)
+#{enum CWiidEnableFlag, CWiidEnableFlag
+ , cwiidFlagMesgIfc = CWIID_FLAG_MESG_IFC
+ , cwiidFlagContinuous = CWIID_FLAG_CONTINUOUS
+ , cwiidFlagRepartBtn = CWIID_FLAG_REPEAT_BTN
+ , cwiidFlagNonblock = CWIID_FLAG_NONBLOCK
+ , cwiidFlagMotionplus = CWIID_FLAG_MOTIONPLUS
+ }
+combineCwiidEnableFlag :: [CWiidEnableFlag] -> CWiidEnableFlag
+combineCwiidEnableFlag = CWiidEnableFlag . foldr ((.|.) . unCWiidEnableFlag) 0
+
+newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: CInt }
                      deriving (Eq, Show)
 #{enum CWiidBtnFlag, CWiidBtnFlag
  , cwiidBtn2     = CWIID_BTN_2
@@ -95,8 +108,8 @@ diffCwiidBtnFlag a b = CWiidBtnFlag $ ai - (ai .&. bi)
   where ai = unCWiidBtnFlag a
         bi = unCWiidBtnFlag b
 
-data CWiidState = CWiidState { rptMode :: Int, led :: Int, rumble :: Int, 
-                               battery :: Int, buttons :: Int } -- xxx 定義不足
+data CWiidState = CWiidState { rptMode :: CInt, led :: CInt, rumble :: CInt, 
+                               battery :: CInt, buttons :: CInt } -- xxx 定義不足
                 deriving Show
 instance Storable CWiidState where
   sizeOf = const #size struct cwiid_state
@@ -114,6 +127,35 @@ instance Storable CWiidState where
     ba <- (#peek struct cwiid_state, battery) cwst
     bu <- (#peek struct cwiid_state, buttons) cwst
     return $ CWiidState rp l ru ba bu
+
+{--
+union cwiid_mesg {
+        enum cwiid_mesg_type type;
+        struct cwiid_status_mesg status_mesg;
+        struct cwiid_btn_mesg btn_mesg;
+        struct cwiid_acc_mesg acc_mesg;
+        struct cwiid_ir_mesg ir_mesg;
+        struct cwiid_nunchuk_mesg nunchuk_mesg;
+        struct cwiid_classic_mesg classic_mesg;
+        struct cwiid_balance_mesg balance_mesg;
+        struct cwiid_motionplus_mesg motionplus_mesg;
+        struct cwiid_error_mesg error_mesg;
+};
+--}
+data CWiidMesg = CWMStat | CWMBtn CInt | CWMAcc | CWMIr | CWMnunchuk | 
+                 CWMClassic | CWMBalance | CWMMotionPlus | CWMError
+               deriving Show -- xxx 定義不足
+instance Storable CWiidMesg where
+  sizeOf = const #size union cwiid_mesg
+  alignment = sizeOf
+  poke _ _ = error "hoge!" -- xxx 書けないよ!
+  peek mesg = do
+    mType <- (#peek union cwiid_mesg, type) mesg
+    case mType::CInt of
+      (#const CWIID_MESG_BTN) -> do
+        b <- (#peek union cwiid_mesg, btn_mesg.buttons) mesg
+        return $ CWMBtn b
+      otherwise -> return CWMError -- xxx
 
 -----------------------------------------------------------------------------
 -- Haskell land
@@ -133,7 +175,7 @@ cwiidSetLed wm = c_cwiid_set_led  handle 9 -- set on LED 1 and 4
   where handle = unCWiidWiimote wm
 
 cwiidSetRptMode :: CWiidWiimote -> IO CInt
-cwiidSetRptMode wm = c_cwiid_set_rpt_mode handle 2 -- set BTN
+cwiidSetRptMode wm = c_cwiid_set_rpt_mode handle 6 -- set BTN and ACC
   where handle = unCWiidWiimote wm
 
 cwiidGetBtnState :: CWiidWiimote -> IO CWiidBtnFlag
@@ -143,6 +185,24 @@ cwiidGetBtnState wm =
     ws <- peek wiState
     return $ CWiidBtnFlag $ buttons ws
       where handle = unCWiidWiimote wm
+
+cwiidEnable :: CWiidWiimote -> IO CInt
+cwiidEnable wm = c_cwiid_enable handle (unCWiidEnableFlag cwiidFlagMesgIfc)
+  where handle = unCWiidWiimote wm
+
+-- xxx たぶんメモリリークしてる
+cwiidGetMesg :: CWiidWiimote -> IO [CWiidMesg]
+cwiidGetMesg wm =
+  alloca (\pNum ->
+           alloca (\ppMesg -> do
+                      let handle = unCWiidWiimote wm
+                      ret <- c_cwiid_get_mesg handle pNum ppMesg
+                      if ret /= 0
+                        then return []
+                        else do num <- peek pNum
+                                pMesg <- peek ppMesg
+                                mesgs <- peekArray (fromIntegral num) pMesg
+                                return mesgs))
 
 -----------------------------------------------------------------------------
 -- C land
@@ -167,6 +227,17 @@ foreign import ccall safe "cwiid_set_rpt_mode" c_cwiid_set_rpt_mode
 foreign import ccall safe "cwiid_get_state" c_cwiid_get_state
   :: Ptr () -> Ptr CWiidState -> IO CInt
 
+-- int cwiid_enable(cwiid_wiimote_t *wiimote, int flags);
+foreign import ccall safe "cwiid_enable" c_cwiid_enable
+  :: Ptr () -> CInt -> IO CInt
+
+-- int cwiid_disable(cwiid_wiimote_t *wiimote, int flags);
+foreign import ccall safe "cwiid_disable" c_cwiid_disable
+  :: Ptr () -> CInt -> IO CInt
+
+-- int cwiid_get_mesg(cwiid_wiimote_t *wiimote, int *mesg_count, union cwiid_mesg *mesg[]);
+foreign import ccall safe "cwiid_get_mesg" c_cwiid_get_mesg
+  :: Ptr () -> Ptr CInt -> Ptr (Ptr CWiidMesg) -> IO CInt
 
 -- C => Haskell
 ---
