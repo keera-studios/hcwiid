@@ -7,11 +7,11 @@ module System.CWiid
         cwiidRptClassic, cwiidRptBalance, cwiidRptMotionplus, cwiidRptExt,
         cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
         cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
-        cwiidBtnPlus, combineCwiidBtnFlag, diffCwiidBtnFlag,
+        cwiidBtnPlus, combineCwiidBtnFlag, splitCwiidBtnFlag, diffCwiidBtnFlag,
         cwiidEnable, cwiidDisable, cwiidGetMesg, cwiidBdaddrAny,
-        cwiidFlagMesgIfc, cwiidFlagContinuous, cwiidFlagRepartBtn
-       , cwiidFlagNonblock, cwiidFlagMotionplus,
-        CWiidBtnFlag(..), CWiidState(..), CWiidWiimote,
+        cwiidFlagMesgIfc, cwiidFlagContinuous, cwiidFlagRepartBtn,
+        cwiidFlagNonblock, cwiidFlagMotionplus,
+        CWiidBtnFlag, CWiidState(..), CWiidWiimote,
         CWiidEnableFlag(..), CWiidRptModeFlag(..)) where
 
 -- import Foreign.C.Error
@@ -111,7 +111,7 @@ newtype CWiidRptModeFlag = CWiidRptModeFlag { unCWiidRptModeFlag :: CUChar }
 combineCwiidRptModeFlag :: [CWiidRptModeFlag] -> CWiidRptModeFlag
 combineCwiidRptModeFlag = CWiidRptModeFlag . foldr ((.|.) . unCWiidRptModeFlag) 0
 
-newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: CInt }
+newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: CUShort }
                      deriving (Eq, Show)
 #{enum CWiidBtnFlag, CWiidBtnFlag
  , cwiidBtn2     = CWIID_BTN_2
@@ -128,14 +128,22 @@ newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: CInt }
  }
 combineCwiidBtnFlag :: [CWiidBtnFlag] -> CWiidBtnFlag
 combineCwiidBtnFlag = CWiidBtnFlag . foldr ((.|.) . unCWiidBtnFlag) 0
+splitCwiidBtnFlag :: CWiidBtnFlag -> [CWiidBtnFlag]
+splitCwiidBtnFlag f = filter (\a ->
+                               (unCWiidBtnFlag f) .&.
+                               (unCWiidBtnFlag a) == (unCWiidBtnFlag a)) bl
+  where
+    bl = [cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
+          cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
+          cwiidBtnPlus]
 diffCwiidBtnFlag :: CWiidBtnFlag -> CWiidBtnFlag -> CWiidBtnFlag
 diffCwiidBtnFlag a b = CWiidBtnFlag $ ai - (ai .&. bi)
   where ai = unCWiidBtnFlag a
         bi = unCWiidBtnFlag b
 
 data CWiidState =
-  CWiidState { cwsRptMode :: CInt, cwsLed :: CInt, cwsRumble :: CInt,
-               cwsBattery :: CInt, cwsButtons :: CInt } -- xxx 定義不足
+  CWiidState { cwsRptMode :: CUChar, cwsLed :: CUChar, cwsRumble :: CUChar,
+               cwsBattery :: CUChar, cwsButtons :: CUShort } -- xxx 定義不足
                 deriving Show
 instance Storable CWiidState where
   sizeOf = const #size struct cwiid_state
@@ -168,8 +176,9 @@ union cwiid_mesg {
         struct cwiid_error_mesg error_mesg;
 };
 --}
-data CWiidMesg = CWMStat | CWMBtn CInt | CWMAcc | CWMIr | CWMnunchuk | 
-                 CWMClassic | CWMBalance | CWMMotionPlus | CWMError
+data CWiidMesg = CWMStat | CWMBtn [CWiidBtnFlag] | CWMAcc | CWMIr | CWMnunchuk
+               | CWMClassic | CWMBalance | CWMMotionPlus | CWMError
+               | CWMUnknown
                deriving Show -- xxx CWMBtn以外は定義不足
 instance Storable CWiidMesg where
   sizeOf = const #size union cwiid_mesg
@@ -180,8 +189,16 @@ instance Storable CWiidMesg where
     case mType::CInt of
       (#const CWIID_MESG_BTN) -> do
         b <- (#peek union cwiid_mesg, btn_mesg.buttons) mesg
-        return $ CWMBtn b
-      otherwise -> return CWMError -- xxx
+        return $ CWMBtn $ splitCwiidBtnFlag $ CWiidBtnFlag b
+      (#const CWIID_MESG_STATUS) -> return CWMStat
+      (#const CWIID_MESG_ACC) -> return CWMAcc
+      (#const CWIID_MESG_IR) -> return CWMIr
+      (#const CWIID_MESG_NUNCHUK) -> return CWMnunchuk
+      (#const CWIID_MESG_CLASSIC) -> return CWMClassic
+      (#const CWIID_MESG_BALANCE) -> return CWMBalance
+      (#const CWIID_MESG_MOTIONPLUS) -> return CWMMotionPlus
+      (#const CWIID_MESG_ERROR) -> return CWMError
+      otherwise -> return CWMUnknown -- xxx
 
 -----------------------------------------------------------------------------
 -- Haskell land
