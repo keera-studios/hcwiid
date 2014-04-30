@@ -1,7 +1,7 @@
 all: Test
 
 Test: Test.hs
-	ghc --make -Wall Test.hs -o Test
+	ghc --make -rtsopts -Wall Test.hs -o Test
 
 lint: Test.hs
 	hlint -c Test.hs
