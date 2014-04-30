@@ -5,7 +5,7 @@ to me).
 So, the only way to get the new version is by cloning this repo. I'll remove
 this notice when (if) a new version is uploaded to hackage.
 
-First things first: How the frag do I compile the test in the examples?
+First things first: How the frag do I compile the tests in test/?
 
 You need to do two things:
 1) Compile the program with -rtsopts (enable RTS command line flags)
