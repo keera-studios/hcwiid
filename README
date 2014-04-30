@@ -1,0 +1,19 @@
+This is a refurbished version of hcwiid. At the present time, this version is
+not on hackage (I'm waiting on the original author to transfer maintenance over
+to me).
+
+So, the only way to get the new version is by cloning this repo. I'll remove
+this notice when (if) a new version is uploaded to hackage.
+
+First things first: How the frag do I compile the test in the examples?
+
+You need to do two things:
+1) Compile the program with -rtsopts (enable RTS command line flags)
+2) Run the program with +RTS -V0
+   This will disable the internal ticks used for profiling, which
+   in turn will make the runtime system not use the SIGALRM signal,
+   which libluetooth uses for its own internal purposes and is necessary
+   to connect to the wiimote.
+
+   (This bit is the work of Paolo Capriotti, whose mastery of GHC
+    baffles me every time.)
