@@ -1,0 +1,4 @@
+2014-05-01 Ivan Perez <ivan.perez@keera.co.uk>
+
+        * hcwiid.cabal: Version bump. Adds new maitainer, repo, extra files.
+        * API: adds set_rumble.
