@@ -1,7 +1,8 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 module System.CWiid
-       (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidGetBtnState,
+       (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidSetRumble,
+        cwiidGetBtnState,
         cwiidLed1, cwiidLed2, cwiidLed3, cwiidLed4, combineCwiidLedFlag,
         cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
         cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
@@ -136,6 +137,10 @@ cwiidSetRptMode :: CWiidWiimote -> IO CInt
 cwiidSetRptMode wm = c_cwiid_set_rpt_mode handle 2 -- set BTN
   where handle = unCWiidWiimote wm
 
+cwiidSetRumble :: CWiidWiimote -> CUChar -> IO CInt
+cwiidSetRumble wm rm = c_cwiid_set_rumble handle rm
+  where handle = unCWiidWiimote wm
+
 cwiidGetBtnState :: CWiidWiimote -> IO CWiidBtnFlag
 cwiidGetBtnState wm =
   alloca $ \wiState -> do
@@ -161,6 +166,10 @@ foreign import ccall safe "cwiid_set_led" c_cwiid_set_led
 
 -- int cwiid_set_rpt_mode(cwiid_wiimote_t *wiimote, uint8_t rpt_mode);
 foreign import ccall safe "cwiid_set_rpt_mode" c_cwiid_set_rpt_mode
+  :: Ptr () -> CUChar -> IO CInt
+
+-- int cwiid_set_rumble(cwiid_wiimote_t *wiimote, uint8_t rumble);
+foreign import ccall safe "cwiid_set_rumble" c_cwiid_set_rumble
   :: Ptr () -> CUChar -> IO CInt
 
 -- int cwiid_get_state(cwiid_wiimote_t *wiimote, struct cwiid_state *state);
