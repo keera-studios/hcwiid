@@ -1,7 +1,7 @@
 Name:                   hcwiid
-Version:                0.0.1
+Version:                0.0.2
 Author:                 Kiwamu Okabe <kiwamu@debian.or.jp>
-Maintainer:             Kiwamu Okabe <kiwamu@debian.or.jp>
+Maintainer:             Ivan Perez <ivan.perez@keera.co.uk>
 License:                GPL-2
 License-File:           COPYING
 Synopsis:               Library to interface with the wiimote
@@ -15,6 +15,8 @@ Cabal-Version:          >= 1.6
 Build-Type:             Simple
 Homepage:               https://gitorious.org/hcwiid
 Tested-with:            GHC == 7.0.4
+
+Extra-source-files: README
 
 Library
   GHC-Options:          -Wall
@@ -30,4 +32,4 @@ Library
  
 Source-Repository head
   Type:                 git
-  Location:             git://gitorious.org/hcwiid/hcwiid.git
+  Location:             git@github.com:ivanperez-keera/hcwiid.git

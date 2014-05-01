@@ -1,9 +1,6 @@
-This is a refurbished version of hcwiid. At the present time, this version is
-not on hackage (I'm waiting on the original author to transfer maintenance over
-to me).
-
-So, the only way to get the new version is by cloning this repo. I'll remove
-this notice when (if) a new version is uploaded to hackage.
+This is a refurbished version of hcwiid. It will include most of cwiid.
+If you find something in cwiid which is not included here and you need it,
+please let me know/send a pull request.
 
 First things first: How the frag do I compile the tests in test/?
 
