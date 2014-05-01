@@ -1,4 +1,5 @@
-This is a refurbished version of hcwiid. It will include most of cwiid.
+This is a refurbished version of hcwiid. It will include most of cwiid,
+and I've already began to include extra functions that I find useful.
 If you find something in cwiid which is not included here and you need it,
 please let me know/send a pull request.
 
