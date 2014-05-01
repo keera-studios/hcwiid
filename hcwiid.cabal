@@ -16,7 +16,7 @@ Build-Type:             Simple
 Homepage:               https://gitorious.org/hcwiid
 Tested-with:            GHC == 7.0.4
 
-Extra-source-files: README
+Extra-source-files: README CHANGELOG test/Test.hs test/Makefile
 
 Library
   GHC-Options:          -Wall
