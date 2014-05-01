@@ -2,7 +2,7 @@
 
 module System.CWiid
        (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidSetRumble,
-        cwiidGetBtnState,
+        cwiidGetBtnState, cwiidIsBtnPushed,
         cwiidLed1, cwiidLed2, cwiidLed3, cwiidLed4, combineCwiidLedFlag,
         cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
         cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
@@ -148,6 +148,10 @@ cwiidGetBtnState wm =
     ws <- peek wiState
     return $ CWiidBtnFlag $ buttons ws
       where handle = unCWiidWiimote wm
+
+cwiidIsBtnPushed :: CWiidBtnFlag -> CWiidBtnFlag -> Bool
+cwiidIsBtnPushed flags btn =
+  unCWiidBtnFlag flags .&. unCWiidBtnFlag btn == unCWiidBtnFlag btn
 
 -----------------------------------------------------------------------------
 -- C land
