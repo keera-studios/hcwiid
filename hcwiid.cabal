@@ -13,7 +13,7 @@ Category:               System
 Stability:              Experimental
 Cabal-Version:          >= 1.6
 Build-Type:             Simple
-Homepage:               https://gitorious.org/hcwiid
+Homepage:               https://github.com/ivanperez-keera/hcwiid
 Tested-with:            GHC == 7.0.4
 
 Extra-source-files: README CHANGELOG test/Test.hs test/Makefile

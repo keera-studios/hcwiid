@@ -1,5 +1,6 @@
 2014-05-01 Ivan Perez <ivan.perez@keera.co.uk>
 
+        * hcwiid.cabal: Version bump (0.0.3)
         * API: adds test function to determine if a button is pushed (down).
 
 2014-05-01 Ivan Perez <ivan.perez@keera.co.uk>
