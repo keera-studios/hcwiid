@@ -15,3 +15,9 @@ You need to do two things:
 
    (This bit is the work of Paolo Capriotti, whose mastery of GHC
     baffles me every time.)
+
+TODO
+========
+* Locate projects using this. (I am personally working on some games that will
+be published.)
+* Write a decent example that uses more than just testing a button thing.
