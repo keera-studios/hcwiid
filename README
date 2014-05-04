@@ -18,6 +18,7 @@ You need to do two things:
 
 TODO
 ========
+* Enable IR. Create an example that uses it.
 * Locate projects using this. (I am personally working on some games that will
 be published.)
 * Write a decent example that uses more than just testing a button thing.
