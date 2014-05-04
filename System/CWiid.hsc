@@ -129,11 +129,15 @@ cwiidOpen =
       then return Nothing
       else return $ Just $ CWiidWiimote handle
 
-cwiidSetLed :: CWiidWiimote -> IO CInt
-cwiidSetLed wm = c_cwiid_set_led  handle 9 -- set on LED 1 and 4
+-- | Enable-disable certain lets.
+--   Example: use 9 to set on LED 1 and 4
+cwiidSetLed :: CWiidWiimote -> CUChar -> IO CInt
+cwiidSetLed wm leds = c_cwiid_set_led handle leds
   where handle = unCWiidWiimote wm
 
-cwiidSetRptMode :: CWiidWiimote -> IO CInt
+-- | Enable/disable reception of certain sensors.
+-- Use 2 to enable buttons.
+cwiidSetRptMode :: CWiidWiimote -> CUChar -> IO CInt
 cwiidSetRptMode wm = c_cwiid_set_rpt_mode handle 2 -- set BTN
   where handle = unCWiidWiimote wm
 
