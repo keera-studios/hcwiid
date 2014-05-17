@@ -1,3 +1,14 @@
+2014-05-17 Ivan Perez <ivan.perez@keera.co.uk>
+
+        * API: adds accelerometer sensing.
+        * Tests: adapts tests to use new rpt_mode and
+          set_led interface.
+        * Documentation: adds (some) haddock documentation.
+
+2014-05-05 Ivan Perez <ivan.perez@keera.co.uk>
+
+        * API: removes hard-coded params to SetLed and SetRptMode
+
 2014-05-01 Ivan Perez <ivan.perez@keera.co.uk>
 
         * hcwiid.cabal: Version bump (0.0.3)

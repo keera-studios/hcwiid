@@ -1,13 +1,60 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
+-- |
+-- Module      :  System.CWiid
+-- Copyright   :  Kiwamu Okabe, Ivan Perez and the cwiid team
+-- License     :  GPL-2
+--
+-- Maintainer  :  ivan.perez@keera.co.uk
+-- Stability   :  experimental
+-- Portability :  unknown
+--
+-- Bindings for the cwiid library, a working userspace driver
+-- along with various applications implementing event drivers,
+-- multiple Wiimote connectivity, gesture recognition, and other
+-- Wiimote-based functionality.
+--
+-- The current implementation is rather incomplete. In particular:
+--
+-- * Some Haskell functions (those related to rpt mode, rumble, leds)
+-- had hard-coded values in them. Therefore, they implemented only a
+-- very partial interface to their C counterparts. The new versions
+-- should be tested and, if any other function is like this,
+-- then exported properly.
+--
+-- * Not all functions/wiimote fields are accessible. In particular,
+-- acceleromoter info is in testing stage and no IR information
+-- is exported.
+--
+-- All in all, the code works quite well and is currently being used
+-- to implement several real games.
+
 module System.CWiid
-       (cwiidOpen, cwiidSetLed, cwiidSetRptMode, cwiidSetRumble,
-        cwiidGetBtnState, cwiidIsBtnPushed,
+       (
+        -- * Initialization
+        cwiidOpen,
+        CWiidWiimote,
+        -- * State
+        CWiidState(..),
+        -- * Leds
+        cwiidSetLed,
         cwiidLed1, cwiidLed2, cwiidLed3, cwiidLed4, combineCwiidLedFlag,
+        CWiidLedFlag,
+
+        -- * Rpt mode
+        cwiidSetRptMode,
+        -- * Rumble
+        cwiidSetRumble,
+        -- * Buttons
+        cwiidGetBtnState, cwiidIsBtnPushed,
         cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
         cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
         cwiidBtnPlus, combineCwiidBtnFlag, diffCwiidBtnFlag,
-        CWiidBtnFlag(..), CWiidState(..), CWiidWiimote) where
+        CWiidBtnFlag(..),
+        -- * Accelerometers
+        cwiidGetAcc,
+        CWiidAcc(..)
+        ) where
 
 -- import Foreign.C.Error
 import Data.Bits
@@ -49,20 +96,6 @@ instance Storable CWiidBdaddr where
 -- typedef struct wiimote cwiid_wiimote_t;
 newtype CWiidWiimote = CWiidWiimote { unCWiidWiimote :: Ptr () }
 
-{--
-struct cwiid_state {
-        uint8_t rpt_mode;
-        uint8_t led;
-        uint8_t rumble;
-        uint8_t battery;
-        uint16_t buttons;
-        uint8_t acc[3];
-        struct cwiid_ir_src ir_src[CWIID_IR_SRC_COUNT];
-        enum cwiid_ext_type ext_type;
-        union ext_state ext;
-        enum cwiid_error error;
-};
---}
 newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
                      deriving (Eq, Show)
 #{enum CWiidLedFlag, CWiidLedFlag
@@ -96,29 +129,67 @@ diffCwiidBtnFlag a b = CWiidBtnFlag $ ai - (ai .&. bi)
   where ai = unCWiidBtnFlag a
         bi = unCWiidBtnFlag b
 
+{--
+struct cwiid_state {
+        uint8_t rpt_mode;
+        uint8_t led;
+        uint8_t rumble;
+        uint8_t battery;
+        uint16_t buttons;
+        uint8_t acc[3];
+        struct cwiid_ir_src ir_src[CWIID_IR_SRC_COUNT];
+        enum cwiid_ext_type ext_type;
+        union ext_state ext;
+        enum cwiid_error error;
+};
+--}
+
+-- FIXME: Incomplete
 data CWiidState = CWiidState { rptMode :: Int, led :: Int, rumble :: Int, 
-                               battery :: Int, buttons :: Int } -- xxx 定義不足
+                               battery :: Int, buttons :: Int, acc :: [Int]
+                             }
                 deriving Show
 instance Storable CWiidState where
   sizeOf = const #size struct cwiid_state
   alignment = sizeOf
-  poke cwst (CWiidState rp l ru ba bu) = do
+  poke cwst (CWiidState rp l ru ba bu [ac0,ac1,ac2]) = do
     (#poke struct cwiid_state, rpt_mode) cwst rp
     (#poke struct cwiid_state, led) cwst l
     (#poke struct cwiid_state, rumble) cwst ru
     (#poke struct cwiid_state, battery) cwst ba
     (#poke struct cwiid_state, buttons) cwst bu
+    (#poke struct cwiid_state, acc[0]) cwst (fromIntegral ac0 :: CUChar)
+    (#poke struct cwiid_state, acc[1]) cwst (fromIntegral ac1 :: CUChar)
+    (#poke struct cwiid_state, acc[2]) cwst (fromIntegral ac2 :: CUChar)
   peek cwst = do
     rp <- (#peek struct cwiid_state, rpt_mode) cwst
     l <- (#peek struct cwiid_state, led) cwst
     ru <- (#peek struct cwiid_state, rumble) cwst
     ba <- (#peek struct cwiid_state, battery) cwst
     bu <- (#peek struct cwiid_state, buttons) cwst
-    return $ CWiidState rp l ru ba bu
+    ac0 <- (#peek struct cwiid_state, acc[0]) cwst
+    ac1 <- (#peek struct cwiid_state, acc[1]) cwst
+    ac2 <- (#peek struct cwiid_state, acc[2]) cwst
+    return $ CWiidState rp l ru ba bu [ fromIntegral (ac0 :: CUChar)
+                                      , fromIntegral (ac1 :: CUChar)
+                                      , fromIntegral (ac2 :: CUChar)]
 
 -----------------------------------------------------------------------------
 -- Haskell land
 ---
+
+-- | Try to establish a connection to any existing Wiimote using
+-- any existing bluetooth interface.
+-- 
+-- The function returns 'Nothing' if there is no bluetooth interface
+-- or if no wiimote can be located. If the connection succeeds,
+-- a 'CWiidWiimote' is returned (inside a 'Just'), which can be used to 
+-- poll the wiimote using other functions.
+-- 
+-- There is a default timeout of 5 seconds.
+-- 
+-- * TODO: export cwiid_open_time and cwiid_close as well.
+
 -- wiimote = cwiid_open(&bdaddr, 0)))
 cwiidOpen :: IO (Maybe CWiidWiimote)
 cwiidOpen =
@@ -129,8 +200,9 @@ cwiidOpen =
       then return Nothing
       else return $ Just $ CWiidWiimote handle
 
--- | Enable-disable certain lets.
+-- | Enable-disable certain leds.
 --   Example: use 9 to set on LED 1 and 4
+-- TODO: Use CWiidLedFlag instead
 cwiidSetLed :: CWiidWiimote -> CUChar -> IO CInt
 cwiidSetLed wm leds = c_cwiid_set_led handle leds
   where handle = unCWiidWiimote wm
@@ -138,7 +210,7 @@ cwiidSetLed wm leds = c_cwiid_set_led handle leds
 -- | Enable/disable reception of certain sensors.
 -- Use 2 to enable buttons.
 cwiidSetRptMode :: CWiidWiimote -> CUChar -> IO CInt
-cwiidSetRptMode wm = c_cwiid_set_rpt_mode handle 2 -- set BTN
+cwiidSetRptMode wm u = c_cwiid_set_rpt_mode handle u -- set BTN
   where handle = unCWiidWiimote wm
 
 cwiidSetRumble :: CWiidWiimote -> CUChar -> IO CInt
@@ -156,6 +228,26 @@ cwiidGetBtnState wm =
 cwiidIsBtnPushed :: CWiidBtnFlag -> CWiidBtnFlag -> Bool
 cwiidIsBtnPushed flags btn =
   unCWiidBtnFlag flags .&. unCWiidBtnFlag btn == unCWiidBtnFlag btn
+
+-- | Array of accelerometer information. It will always contain
+-- exactly three elements.
+-- 
+-- TODO: provide a more informative and restrictive interface
+-- with exactly three named Int (byte?) fields.
+--
+newtype CWiidAcc = CWiidAcc { unCWiidAcc :: [Int] }
+ deriving (Eq, Show)
+
+-- | Obtain accelerometer information.
+cwiidGetAcc :: CWiidWiimote -> IO CWiidAcc
+cwiidGetAcc wm =
+  alloca $ \wiState -> do
+    _ <- c_cwiid_get_state handle wiState
+    ws <- peek wiState
+    return $ CWiidAcc $ acc ws
+      where handle = unCWiidWiimote wm
+  
+
 
 -----------------------------------------------------------------------------
 -- C land

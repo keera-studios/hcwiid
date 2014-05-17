@@ -10,8 +10,9 @@ main = do
   putStrLn "Put Wiimote in discoverable mode now (press 1+2)..."
   (Just wm) <- cwiidOpen
   putStrLn "found!"
-  _ <- cwiidSetLed wm
-  _ <- cwiidSetRptMode wm
+  _ <- cwiidSetLed wm 2
+  _ <- cwiidSetRptMode wm 7
   _ <- forever $ do _ <- usleep 300000
                     cwiidGetBtnState wm >>= print
+                    cwiidGetAcc wm >>= print
   return () -- not reach
