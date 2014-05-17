@@ -94,40 +94,32 @@ instance Storable CWiidBdaddr where
     return $ CWiidBdaddr b0 b1 b2 b3 b4 b5
 
 -- typedef struct wiimote cwiid_wiimote_t;
+--
+-- | A connection to an existing wiimote. Use 'cwiidOpen' to
+-- connect to a wiimote and obtain one of these.
 newtype CWiidWiimote = CWiidWiimote { unCWiidWiimote :: Ptr () }
 
-newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
-                     deriving (Eq, Show)
-#{enum CWiidLedFlag, CWiidLedFlag
- , cwiidLed1 = CWIID_LED1_ON
- , cwiidLed2 = CWIID_LED2_ON
- , cwiidLed3 = CWIID_LED3_ON
- , cwiidLed4 = CWIID_LED4_ON
- }
-combineCwiidLedFlag :: [CWiidLedFlag] -> CWiidLedFlag
-combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
+-- | Try to establish a connection to any existing Wiimote using
+-- any existing bluetooth interface.
+-- 
+-- The function returns 'Nothing' if there is no bluetooth interface
+-- or if no wiimote can be located. If the connection succeeds,
+-- a 'CWiidWiimote' is returned (inside a 'Just'), which can be used to 
+-- poll the wiimote using other functions.
+-- 
+-- There is a default timeout of 5 seconds.
+-- 
+-- * TODO: export cwiid_open_time and cwiid_close as well.
 
-newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: Int }
-                     deriving (Eq, Show)
-#{enum CWiidBtnFlag, CWiidBtnFlag
- , cwiidBtn2     = CWIID_BTN_2
- , cwiidBtn1     = CWIID_BTN_1
- , cwiidBtnB     = CWIID_BTN_B
- , cwiidBtnA     = CWIID_BTN_A
- , cwiidBtnMinus = CWIID_BTN_MINUS
- , cwiidBtnHome  = CWIID_BTN_HOME
- , cwiidBtnLeft  = CWIID_BTN_LEFT
- , cwiidBtnRight = CWIID_BTN_RIGHT
- , cwiidBtnDown  = CWIID_BTN_DOWN
- , cwiidBtnUp    = CWIID_BTN_UP
- , cwiidBtnPlus  = CWIID_BTN_PLUS
- }
-combineCwiidBtnFlag :: [CWiidBtnFlag] -> CWiidBtnFlag
-combineCwiidBtnFlag = CWiidBtnFlag . foldr ((.|.) . unCWiidBtnFlag) 0
-diffCwiidBtnFlag :: CWiidBtnFlag -> CWiidBtnFlag -> CWiidBtnFlag
-diffCwiidBtnFlag a b = CWiidBtnFlag $ ai - (ai .&. bi)
-  where ai = unCWiidBtnFlag a
-        bi = unCWiidBtnFlag b
+-- wiimote = cwiid_open(&bdaddr, 0)))
+cwiidOpen :: IO (Maybe CWiidWiimote)
+cwiidOpen =
+  alloca $ \bdAddr -> do
+    poke bdAddr $ CWiidBdaddr 0 0 0 0 0 0
+    handle <- c_cwiid_open bdAddr 0 -- エラー処理必要
+    if handle == nullPtr
+      then return Nothing
+      else return $ Just $ CWiidWiimote handle
 
 {--
 struct cwiid_state {
@@ -144,11 +136,17 @@ struct cwiid_state {
 };
 --}
 
--- FIXME: Incomplete
-data CWiidState = CWiidState { rptMode :: Int, led :: Int, rumble :: Int, 
-                               battery :: Int, buttons :: Int, acc :: [Int]
-                             }
-                deriving Show
+-- | The state of the wiimote. Use 'cwiidSetRptMode' to enable/disable
+-- sensors.
+-- 
+-- * FIXME: incomplete state
+-- * FIXME: export get_state
+data CWiidState = CWiidState
+  { rptMode :: Int, led :: Int, rumble :: Int, 
+    battery :: Int, buttons :: Int, acc :: [Int]
+  }
+  deriving Show
+
 instance Storable CWiidState where
   sizeOf = const #size struct cwiid_state
   alignment = sizeOf
@@ -174,31 +172,16 @@ instance Storable CWiidState where
                                       , fromIntegral (ac1 :: CUChar)
                                       , fromIntegral (ac2 :: CUChar)]
 
------------------------------------------------------------------------------
--- Haskell land
----
-
--- | Try to establish a connection to any existing Wiimote using
--- any existing bluetooth interface.
--- 
--- The function returns 'Nothing' if there is no bluetooth interface
--- or if no wiimote can be located. If the connection succeeds,
--- a 'CWiidWiimote' is returned (inside a 'Just'), which can be used to 
--- poll the wiimote using other functions.
--- 
--- There is a default timeout of 5 seconds.
--- 
--- * TODO: export cwiid_open_time and cwiid_close as well.
-
--- wiimote = cwiid_open(&bdaddr, 0)))
-cwiidOpen :: IO (Maybe CWiidWiimote)
-cwiidOpen =
-  alloca $ \bdAddr -> do
-    poke bdAddr $ CWiidBdaddr 0 0 0 0 0 0
-    handle <- c_cwiid_open bdAddr 0 -- エラー処理必要
-    if handle == nullPtr
-      then return Nothing
-      else return $ Just $ CWiidWiimote handle
+newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
+                     deriving (Eq, Show)
+#{enum CWiidLedFlag, CWiidLedFlag
+ , cwiidLed1 = CWIID_LED1_ON
+ , cwiidLed2 = CWIID_LED2_ON
+ , cwiidLed3 = CWIID_LED3_ON
+ , cwiidLed4 = CWIID_LED4_ON
+ }
+combineCwiidLedFlag :: [CWiidLedFlag] -> CWiidLedFlag
+combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
 
 -- | Enable-disable certain leds.
 --   Example: use 9 to set on LED 1 and 4
@@ -207,16 +190,52 @@ cwiidSetLed :: CWiidWiimote -> CUChar -> IO CInt
 cwiidSetLed wm leds = c_cwiid_set_led handle leds
   where handle = unCWiidWiimote wm
 
+newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: Int }
+                     deriving (Eq, Show)
+#{enum CWiidBtnFlag, CWiidBtnFlag
+ , cwiidBtn2     = CWIID_BTN_2
+ , cwiidBtn1     = CWIID_BTN_1
+ , cwiidBtnB     = CWIID_BTN_B
+ , cwiidBtnA     = CWIID_BTN_A
+ , cwiidBtnMinus = CWIID_BTN_MINUS
+ , cwiidBtnHome  = CWIID_BTN_HOME
+ , cwiidBtnLeft  = CWIID_BTN_LEFT
+ , cwiidBtnRight = CWIID_BTN_RIGHT
+ , cwiidBtnDown  = CWIID_BTN_DOWN
+ , cwiidBtnUp    = CWIID_BTN_UP
+ , cwiidBtnPlus  = CWIID_BTN_PLUS
+ }
+
+combineCwiidBtnFlag :: [CWiidBtnFlag] -> CWiidBtnFlag
+combineCwiidBtnFlag = CWiidBtnFlag . foldr ((.|.) . unCWiidBtnFlag) 0
+
+diffCwiidBtnFlag :: CWiidBtnFlag -> CWiidBtnFlag -> CWiidBtnFlag
+diffCwiidBtnFlag a b = CWiidBtnFlag $ ai - (ai .&. bi)
+  where ai = unCWiidBtnFlag a
+        bi = unCWiidBtnFlag b
+
+-- * Reception mode
+
+-- | Reception modes that select which sensors/wiimote activity
+-- we listen to.
+newtype CWiidRptMode = CWiidRptMode { unCWiidRptMode :: CUChar }
+  deriving (Eq, Show)
+
 -- | Enable/disable reception of certain sensors.
 -- Use 2 to enable buttons.
 cwiidSetRptMode :: CWiidWiimote -> CUChar -> IO CInt
 cwiidSetRptMode wm u = c_cwiid_set_rpt_mode handle u -- set BTN
   where handle = unCWiidWiimote wm
 
+-- * Rumble
+
 cwiidSetRumble :: CWiidWiimote -> CUChar -> IO CInt
 cwiidSetRumble wm rm = c_cwiid_set_rumble handle rm
   where handle = unCWiidWiimote wm
 
+-- * Buttons
+
+-- | Returns a mask with the buttons that are currently pushed.
 cwiidGetBtnState :: CWiidWiimote -> IO CWiidBtnFlag
 cwiidGetBtnState wm =
   alloca $ \wiState -> do
@@ -225,14 +244,23 @@ cwiidGetBtnState wm =
     return $ CWiidBtnFlag $ buttons ws
       where handle = unCWiidWiimote wm
 
-cwiidIsBtnPushed :: CWiidBtnFlag -> CWiidBtnFlag -> Bool
+-- | Returns 'True' if the button indicated by the flag is pushed,
+-- 'False' otherwise.
+-- 
+-- This is a pure function, so the first argument must be the
+-- button flags as returned by 'cwiidGetBtnState'. 
+cwiidIsBtnPushed :: CWiidBtnFlag -- ^ The button flags as returned by 'cwiidGetBtnState'. 
+                 -> CWiidBtnFlag -- ^ A mask that flags the button/s that we want to check.
+                 -> Bool         -- ^ 'True' if they are all pushed, 'False' otherwise.
 cwiidIsBtnPushed flags btn =
   unCWiidBtnFlag flags .&. unCWiidBtnFlag btn == unCWiidBtnFlag btn
+
+-- * Accelerometres
 
 -- | Array of accelerometer information. It will always contain
 -- exactly three elements.
 -- 
--- TODO: provide a more informative and restrictive interface
+-- * TODO: provide a more informative and restrictive interface
 -- with exactly three named Int (byte?) fields.
 --
 newtype CWiidAcc = CWiidAcc { unCWiidAcc :: [Int] }
@@ -247,7 +275,7 @@ cwiidGetAcc wm =
     return $ CWiidAcc $ acc ws
       where handle = unCWiidWiimote wm
   
-
+-- * Low-level bindings to C functions and back
 
 -----------------------------------------------------------------------------
 -- C land
