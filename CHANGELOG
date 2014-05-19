@@ -1,6 +1,7 @@
 2014-05-17 Ivan Perez <ivan.perez@keera.co.uk>
 
         * API: adds accelerometer sensing.
+        * API: uses newtype for leds instead of the low-level CUChar
         * Tests: adapts tests to use new rpt_mode and
           set_led interface.
         * Documentation: adds (some) haddock documentation.
