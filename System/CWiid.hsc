@@ -36,13 +36,17 @@ module System.CWiid
         CWiidWiimote,
         -- * State
         CWiidState(..),
-        -- * Leds
-        cwiidSetLed,
-        cwiidLed1, cwiidLed2, cwiidLed3, cwiidLed4, combineCwiidLedFlag,
-        CWiidLedFlag,
-
-        -- * Rpt mode
+        -- * Reception mode
         cwiidSetRptMode,
+        -- * Leds
+        CWiidLedFlag,
+        cwiidLed1,
+        cwiidLed2,
+        cwiidLed3,
+        cwiidLed4,
+        -- ** Led operations
+        cwiidSetLed,
+        combineCwiidLedFlag,
         -- * Rumble
         cwiidSetRumble,
         -- * Buttons
@@ -174,21 +178,48 @@ instance Storable CWiidState where
 
 newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
                      deriving (Eq, Show)
+
+-- | Flag with exactly led 1 enabled. Use 'combineCwiidLedFlag'
+--   to create flags with several leds enabled.
 #{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed1 = CWIID_LED1_ON
+ }
+
+-- | Flag with exactly led 2 enabled. Use 'combineCwiidLedFlag'
+--   to create flags with several leds enabled.
+#{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed2 = CWIID_LED2_ON
+ }
+
+-- | Flag with exactly led 2 enabled. Use 'combineCwiidLedFlag'
+--   to create flags with several leds enabled.
+#{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed3 = CWIID_LED3_ON
+ }
+
+-- | Flag with exactly led 4 enabled. Use 'combineCwiidLedFlag'
+--   to create flags with several leds enabled.
+#{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed4 = CWIID_LED4_ON
  }
+
+-- | Enable/disable certain leds.
+--
+--   Use 'cwiidLed1' .. 'cwiidLed4' together with 'combineCwiidLedFlag'
+--   to create a flag with just the leds you want enabled and change
+--   all at once with one operation.
+cwiidSetLed :: CWiidWiimote -> CWiidLedFlag -> IO CInt
+cwiidSetLed wm leds = c_cwiid_set_led handle ledUChars
+  where handle    = unCWiidWiimote wm
+        ledUChars = fromIntegral (unCWiidLedFlag leds)
+
+-- | Combine several led flags into one led flag with those leds
+--   enabled and all other leds disabled.
+
 combineCwiidLedFlag :: [CWiidLedFlag] -> CWiidLedFlag
 combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
 
--- | Enable-disable certain leds.
---   Example: use 9 to set on LED 1 and 4
--- TODO: Use CWiidLedFlag instead
-cwiidSetLed :: CWiidWiimote -> CUChar -> IO CInt
-cwiidSetLed wm leds = c_cwiid_set_led handle leds
-  where handle = unCWiidWiimote wm
+-- * Buttons
 
 newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: Int }
                      deriving (Eq, Show)
