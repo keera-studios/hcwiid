@@ -298,6 +298,9 @@ newtype CWiidAcc = CWiidAcc { unCWiidAcc :: [Int] }
  deriving (Eq, Show)
 
 -- | Obtain accelerometer information.
+--   FIXME: read wmgui/main.c:cwiid_acc(1119) to understand how to use
+--   this information, what else might need to be exported, and how
+--   to calibrate the accelerometers.
 cwiidGetAcc :: CWiidWiimote -> IO CWiidAcc
 cwiidGetAcc wm =
   alloca $ \wiState -> do
