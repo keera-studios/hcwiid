@@ -11,8 +11,9 @@ main = do
   (Just wm) <- cwiidOpen
   putStrLn "found!"
   _ <- cwiidSetLed wm (combineCwiidLedFlag [cwiidLed1, cwiidLed3])
-  _ <- cwiidSetRptMode wm 7
+  _ <- cwiidSetRptMode wm 15 -- 7
   _ <- forever $ do _ <- usleep 300000
                     cwiidGetBtnState wm >>= print
-                    cwiidGetAcc wm >>= print
+                    -- cwiidGetAcc wm >>= print
+                    cwiidGetIR wm >>= print
   return () -- not reach

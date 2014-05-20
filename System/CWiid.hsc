@@ -57,7 +57,10 @@ module System.CWiid
         CWiidBtnFlag(..),
         -- * Accelerometers
         cwiidGetAcc,
-        CWiidAcc(..)
+        CWiidAcc(..),
+        -- * Infra-red
+        CWiidIRSrc(..),
+        cwiidGetIR
         ) where
 
 -- import Foreign.C.Error
@@ -148,13 +151,14 @@ struct cwiid_state {
 data CWiidState = CWiidState
   { rptMode :: Int, led :: Int, rumble :: Int, 
     battery :: Int, buttons :: Int, acc :: [Int]
+  , irSrc   :: [CWiidIRSrc]
   }
   deriving Show
 
 instance Storable CWiidState where
   sizeOf = const #size struct cwiid_state
   alignment = sizeOf
-  poke cwst (CWiidState rp l ru ba bu [ac0,ac1,ac2]) = do
+  poke cwst (CWiidState rp l ru ba bu [ac0,ac1,ac2] irs) = do
     (#poke struct cwiid_state, rpt_mode) cwst rp
     (#poke struct cwiid_state, led) cwst l
     (#poke struct cwiid_state, rumble) cwst ru
@@ -163,6 +167,7 @@ instance Storable CWiidState where
     (#poke struct cwiid_state, acc[0]) cwst (fromIntegral ac0 :: CUChar)
     (#poke struct cwiid_state, acc[1]) cwst (fromIntegral ac1 :: CUChar)
     (#poke struct cwiid_state, acc[2]) cwst (fromIntegral ac2 :: CUChar)
+    pokeArray ((#ptr struct cwiid_state, ir_src) cwst) irs 
   peek cwst = do
     rp <- (#peek struct cwiid_state, rpt_mode) cwst
     l <- (#peek struct cwiid_state, led) cwst
@@ -172,10 +177,66 @@ instance Storable CWiidState where
     ac0 <- (#peek struct cwiid_state, acc[0]) cwst
     ac1 <- (#peek struct cwiid_state, acc[1]) cwst
     ac2 <- (#peek struct cwiid_state, acc[2]) cwst
+    irs <- peekArray cwiidIrSrcCount ((#ptr struct cwiid_state, ir_src) cwst)
     return $ CWiidState rp l ru ba bu [ fromIntegral (ac0 :: CUChar)
                                       , fromIntegral (ac1 :: CUChar)
                                       , fromIntegral (ac2 :: CUChar)]
+                                      irs
 
+-- * Infrared
+
+-- | Maximum number of infrared points detected.
+--   By default (according to cwiid) it should be 4.
+cwiidIrSrcCount :: Int
+cwiidIrSrcCount = (#const CWIID_IR_SRC_COUNT)
+
+-- struct cwiid_ir_src {
+-- 	char valid;
+-- 	uint16_t pos[2];
+-- 	int8_t size;
+-- };
+--
+-- The following model is weaker than the counterpart in C (see above). We do
+-- so in order to provide something more "natural" in Haskell, but it might
+-- be better to use a more precise datatype.
+
+-- | Internal representation of an infrared point. You should no use it
+--   unless you know what you are doing; use 'CWiidIR' instead.
+data CWiidIRSrc = CWiidIRSrc
+  { cwiidIRSrcValid :: Bool
+  , cwiidIRSrcPosX  :: Int
+  , cwiidIRSrcPosY  :: Int
+  , cwiidIRSrcSize  :: Int
+  }
+ deriving Show
+
+instance Storable CWiidIRSrc where
+  sizeOf = const #size struct cwiid_ir_src
+  alignment = sizeOf
+  poke cwst (CWiidIRSrc valid posX posY sz) = do
+    (#poke struct cwiid_ir_src, valid)  cwst ((if valid then (-1) else 0) :: CChar)
+    (#poke struct cwiid_ir_src, pos[0]) cwst (fromIntegral posX :: CUShort)
+    (#poke struct cwiid_ir_src, pos[1]) cwst (fromIntegral posY :: CUShort)
+    (#poke struct cwiid_ir_src, size)   cwst (fromIntegral sz   :: CChar)
+  peek cwst = do
+    valid <- (#peek struct cwiid_ir_src, valid)  cwst
+    posX  <- (#peek struct cwiid_ir_src, pos[0]) cwst
+    posY  <- (#peek struct cwiid_ir_src, pos[1]) cwst
+    sz    <- (#peek struct cwiid_ir_src, size)   cwst
+    return $ CWiidIRSrc (not ((valid :: CChar) == 0))
+                        (fromIntegral (posX :: CUShort))
+                        (fromIntegral (posY :: CUShort))
+                        (fromIntegral (sz :: CChar))
+
+cwiidGetIR :: CWiidWiimote -> IO [CWiidIRSrc]
+cwiidGetIR wm = 
+  alloca $ \wiState -> do
+    _ <- c_cwiid_get_state handle wiState
+    ws <- peek wiState
+    return (irSrc ws)
+      where handle = unCWiidWiimote wm
+
+-- * Leds
 newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
                      deriving (Eq, Show)
 
