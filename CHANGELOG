@@ -1,3 +1,8 @@
+2014-05-20 Ivan Perez <ivan.perez@keera.co.uk>
+
+        * API: adds infrared tracking support
+        * Tests: adapts test to report IR data
+
 2014-05-17 Ivan Perez <ivan.perez@keera.co.uk>
 
         * API: adds accelerometer sensing.
