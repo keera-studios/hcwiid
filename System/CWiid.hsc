@@ -23,8 +23,8 @@
 -- then exported properly.
 --
 -- * Not all functions/wiimote fields are accessible. In particular,
--- acceleromoter info is in testing stage and no IR information
--- is exported.
+-- acceleromoter and IR is in testing stage. Nunchuck, calibration,
+-- wiimote plus are not handled at all (but will be in the future).
 --
 -- All in all, the code works quite well and is currently being used
 -- to implement several real games.
