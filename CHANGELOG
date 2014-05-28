@@ -1,7 +1,7 @@
 2014-05-28 Ivan Perez <ivan.perez@keera.co.uk>
 
-        * List of authors removed original author upon request.
-          (Credit is still given in the AUTHORS file).
+        * hcwiid.cabal: Version bump. Removed original author upon
+          request (credit is still given in the AUTHORS file).
 
 2014-05-20 Ivan Perez <ivan.perez@keera.co.uk>
 
