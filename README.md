@@ -1,3 +1,9 @@
+[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=ivanperez-keera&url=https://github.com/ivanperez-keera/hcwiid&title=HCwiid&language=&tags=github&category=software) 
+
+The official announcement, which describes the available features,
+can be found here:
+http://keera.co.uk/blog/2014/05/27/interacting-haskell-games-using-wiimote/
+
 This is a refurbished version of hcwiid. It will include most of cwiid,
 and I've already began to include extra functions that I find useful.
 If you find something in cwiid which is not included here and you need it,
