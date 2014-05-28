@@ -24,8 +24,8 @@ Compiling programs that use the wiimote (special flags)!
 How the frag do I compile the tests in test/?
 
 You need to do two things:
-1) Compile the program with -rtsopts (enable RTS command line flags)
-2) Run the program with +RTS -V0
+1. Compile the program with -rtsopts (enable RTS command line flags)
+2. Run the program with +RTS -V0
    This will disable the internal ticks used for profiling, which
    in turn will make the runtime system not use the SIGALRM signal,
    which libluetooth uses for its own internal purposes and is necessary
