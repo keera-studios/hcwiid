@@ -39,6 +39,7 @@ You need to do two things:
 Projects using this
 ===================
 * Carettah (http://carettah.masterq.net/)
+* Haskanoid (https://github.com/ivanperez-keera/haskanoid)
 
 TODO
 ========
