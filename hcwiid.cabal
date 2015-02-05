@@ -1,6 +1,6 @@
 Name:                   hcwiid
-Version:                0.0.5
-Author:                 Kiwamu Okabe <kiwamu@debian.or.jp>, Ivan Perez <ivan.perez@keera.co.uk>
+Version:                0.0.6
+Author:                 Ivan Perez <ivan.perez@keera.co.uk>
 Maintainer:             Ivan Perez <ivan.perez@keera.co.uk>
 License:                GPL-2
 License-File:           COPYING

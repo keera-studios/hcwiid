@@ -1,3 +1,12 @@
+2014-06-04 Ivan Perez <ivan.perez@keera.co.uk>
+
+        * Adds project to hudson-backed continuous integration server.
+
+2014-05-28 Ivan Perez <ivan.perez@keera.co.uk>
+
+        * hcwiid.cabal: Version bump. Removed original author upon
+          request (credit is still given in the AUTHORS file).
+
 2014-05-20 Ivan Perez <ivan.perez@keera.co.uk>
 
         * API: adds infrared tracking support
