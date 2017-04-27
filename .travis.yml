@@ -1,0 +1,40 @@
+# The following enables several GHC versions to be tested; often it's enough to
+# test only against the last release in a major GHC version. Feel free to omit
+# lines listings versions you don't need/want testing for.
+language: c
+env:
+ - GHCVER=7.6.3
+ - GHCVER=7.8.4
+ - GHCVER=7.10.3
+ - GHCVER=8.0.1
+
+# Note: the distinction between `before_install` and `install` is not important.
+before_install:
+ - unset CC
+install:
+ - travis_retry sudo add-apt-repository -y ppa:hvr/ghc
+ - travis_retry sudo apt-get update
+ - travis_retry sudo apt-get install libcwiid-dev
+ - travis_retry sudo apt-get install cabal-install-1.24 ghc-$GHCVER-prof ghc-$GHCVER-dyn alex-3.1.4 happy-1.19.5
+ - export PATH=$HOME/.cabal/bin:/opt/ghc/$GHCVER/bin:/opt/cabal/1.24/bin:/opt/alex/3.1.4/bin:/opt/happy/1.19.5/bin:$PATH
+ - travis_retry cabal update
+
+script:
+ - travis_retry cabal install --run-tests -v -j1
+
+notifications:
+ email: true
+
+branches:
+    only:
+          - master
+          - develop
+
+deploy:
+  provider: hackage
+  username: keera_studios_ci
+  password:
+    secure: f/WpnKaAEXDolHMOW5+QULH1JzpRXIGDxBEv9kHwGjmaUYnFtqMjVUpdsCOXyATQSm5opyjbZF65PnWHU80KWo9q3H9C9phTfqr9Os/LBCtl47gt8mCqEg7I+Z1RrQlYeNFcqkkjdvbMSaVzQaZuEANe4fHw7kj2eVP2I3HuMBgKJR6BcE/gKCEgxNBwXrmdzyfu2kaCk12q6aZLKnVRpIg4+iwbupALcnX5TSorTwOStJRmUv/68bRvVZEcldVuNruBN61SImoHMkF9VdG4VmKDmubBFWktjKlsvnReHWpdGZJMeOat2S/Gs5fN6CKEWdMDy0H8Evl98cUPUtpU54ki3DePUbqY+1iuFjNjEr0R5Njs558rpvW1tgpBjbJv0wJgg9HqkeFFdNUSnLVMCB7p3QEAEa9lU+q0Uk5QzonZctkr9mlnxZjOZFEfIxmw2SDektzwsUIn7EvtZS/ziww8nrlkgkEHLJR2aZftyh+dvakeUqyEj3lTY2H9lnnyjRQu7YTZF4VSmHJI06p7eXvl12ObxrTsWvwTqaAOYXBKfBJjiCZOJ9uafC6GJCjflfI6cs0b2ZI/IoRmH88nclXHLmpR2QzOVe6zr+miwPDqceMhnRb6ADr/zNlPg1spkV+xNe+qRJgK5y1NDSQ1fwDbrwpkZAEtVn4s2GoBXBw=
+  on:
+    branch: master
+    condition: "$GHCVER = 8.0.1"
