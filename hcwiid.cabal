@@ -11,7 +11,7 @@ Description:            HCWiid is a working userspace driver along with various
 			and other Wiimote-based functionality.
 Category:               System
 Stability:              Experimental
-Cabal-Version:          >= 1.6
+cabal-version:          >= 1.10
 Build-Type:             Simple
 Homepage:               https://github.com/ivanperez-keera/hcwiid
 Tested-with:            GHC == 7.0.4
