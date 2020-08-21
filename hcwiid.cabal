@@ -1,21 +1,21 @@
-cabal-version:          >= 1.10
-build-type:             Simple
+cabal-version: >= 1.10
+build-type:    Simple
 
-name:                   hcwiid
-version:                0.0.6.1
-author:                 Ivan Perez <ivan.perez@keera.co.uk>
-maintainer:             Ivan Perez <ivan.perez@keera.co.uk>
-homepage:               https://github.com/ivanperez-keera/hcwiid
-license:                GPL-2
-license-file:           COPYING
-category:               System
-synopsis:               Library to interface with the wiimote
+name:          hcwiid
+version:       0.0.6.1
+author:        Ivan Perez <ivan.perez@keera.co.uk>
+maintainer:    Ivan Perez <ivan.perez@keera.co.uk>
+homepage:      https://github.com/ivanperez-keera/hcwiid
+license:       GPL-2
+license-file:  COPYING
+category:      System
+synopsis:      Library to interface with the wiimote
 description:
   HCWiid is a working userspace driver along with various applications
   implementing event drivers, multiple wiimote connectivity, gesture
   recognition, and other Wiimote-based functionality.
-stability:              Experimental
-tested-with:            GHC == 7.0.4
+stability:     Experimental
+tested-with:   GHC == 7.0.4
 
 extra-source-files:
   README.md
@@ -24,19 +24,19 @@ extra-source-files:
   test/Makefile
 
 source-repository head
-  type:                 git
-  location:             git@github.com:ivanperez-keera/hcwiid.git
+  type:     git
+  location: git@github.com:ivanperez-keera/hcwiid.git
 
 
 -- You can disable the hlint test suite with -f-test-hlint
 flag test-hlint
   default: False
-  manual: True
+  manual:  True
 
 -- You can disable the haddock coverage test suite with -f-test-doc-coverage
 flag test-doc-coverage
   default: False
-  manual: True
+  manual:  True
 
 
 library
@@ -115,7 +115,7 @@ test-suite haddock-coverage
       False
   else
     build-depends:
-        base >= 4 && < 5
+        base         >= 4 && < 5
       , directory
       , filepath
       , process
