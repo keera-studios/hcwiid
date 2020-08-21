@@ -11,9 +11,9 @@ license-file:           COPYING
 category:               System
 synopsis:               Library to interface with the wiimote
 description:            HCWiid is a working userspace driver along with various
- 			applications implementing event drivers, multiple
-			wiimote	connectivity, gesture recognition,
-			and other Wiimote-based functionality.
+                        applications implementing event drivers, multiple
+                        wiimote connectivity, gesture recognition,
+                        and other Wiimote-based functionality.
 stability:              Experimental
 tested-with:            GHC == 7.0.4
 
