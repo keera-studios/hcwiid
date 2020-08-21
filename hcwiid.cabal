@@ -1,19 +1,20 @@
+cabal-version:          >= 1.10
+build-type:             Simple
+
 name:                   hcwiid
 version:                0.0.6.1
 author:                 Ivan Perez <ivan.perez@keera.co.uk>
 maintainer:             Ivan Perez <ivan.perez@keera.co.uk>
+homepage:               https://github.com/ivanperez-keera/hcwiid
 license:                GPL-2
 license-file:           COPYING
+category:               System
 synopsis:               Library to interface with the wiimote
 description:            HCWiid is a working userspace driver along with various
  			applications implementing event drivers, multiple
 			wiimote	connectivity, gesture recognition,
 			and other Wiimote-based functionality.
-category:               System
 stability:              Experimental
-cabal-version:          >= 1.10
-build-type:             Simple
-homepage:               https://github.com/ivanperez-keera/hcwiid
 tested-with:            GHC == 7.0.4
 
 extra-source-files: README.md CHANGELOG test/Test.hs test/Makefile
