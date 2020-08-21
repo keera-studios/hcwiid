@@ -1,40 +1,40 @@
-Name:                   hcwiid
-Version:                0.0.6.1
-Author:                 Ivan Perez <ivan.perez@keera.co.uk>
-Maintainer:             Ivan Perez <ivan.perez@keera.co.uk>
-License:                GPL-2
-License-File:           COPYING
-Synopsis:               Library to interface with the wiimote
-Description:            HCWiid is a working userspace driver along with various
+name:                   hcwiid
+version:                0.0.6.1
+author:                 Ivan Perez <ivan.perez@keera.co.uk>
+maintainer:             Ivan Perez <ivan.perez@keera.co.uk>
+license:                GPL-2
+license-file:           COPYING
+synopsis:               Library to interface with the wiimote
+description:            HCWiid is a working userspace driver along with various
  			applications implementing event drivers, multiple
 			wiimote	connectivity, gesture recognition,
 			and other Wiimote-based functionality.
-Category:               System
-Stability:              Experimental
+category:               System
+stability:              Experimental
 cabal-version:          >= 1.10
-Build-Type:             Simple
-Homepage:               https://github.com/ivanperez-keera/hcwiid
-Tested-with:            GHC == 7.0.4
+build-type:             Simple
+homepage:               https://github.com/ivanperez-keera/hcwiid
+tested-with:            GHC == 7.0.4
 
-Extra-source-files: README.md CHANGELOG test/Test.hs test/Makefile
+extra-source-files: README.md CHANGELOG test/Test.hs test/Makefile
 
-Library
+library
   default-language: Haskell2010
 
-  GHC-Options:          -Wall
-  Exposed-Modules:      System.CWiid
-  Build-Depends:        base >= 4 && < 5, unix
-  Includes:             cwiid.h
-  Include-Dirs:         /usr/include, /usr/local/include, .
-  Extra-Libraries:      bluetooth, cwiid
-  Extra-Lib-Dirs:       /usr/lib, /usr/local/lib
+  ghc-options:          -Wall
+  exposed-modules:      System.CWiid
+  build-depends:        base >= 4 && < 5, unix
+  includes:             cwiid.h
+  include-dirs:         /usr/include, /usr/local/include, .
+  extra-libraries:      bluetooth, cwiid
+  extra-lib-dirs:       /usr/lib, /usr/local/lib
   -- machine switch
   if os(linux)
-    CPP-Options:        -DOS_Linux
+    cpp-options:        -DOS_Linux
 
-Source-Repository head
-  Type:                 git
-  Location:             git@github.com:ivanperez-keera/hcwiid.git
+source-repository head
+  type:                 git
+  location:             git@github.com:ivanperez-keera/hcwiid.git
 
 -- You can disable the hlint test suite with -f-test-hlint
 flag test-hlint
