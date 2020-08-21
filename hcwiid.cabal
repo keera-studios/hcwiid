@@ -92,8 +92,8 @@ test-suite hlint
       False
   else
     build-depends:
-      base,
-      hlint >= 1.7
+        base
+      , hlint >= 1.7
 
 -- Verify that the code is thoroughly documented
 test-suite haddock-coverage
@@ -115,8 +115,8 @@ test-suite haddock-coverage
       False
   else
     build-depends:
-      base >= 4 && < 5,
-      directory,
-      filepath,
-      process,
-      regex-posix
+        base >= 4 && < 5
+      , directory
+      , filepath
+      , process
+      , regex-posix
