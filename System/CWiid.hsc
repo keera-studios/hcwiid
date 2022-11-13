@@ -1,13 +1,12 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
-
 -- |
--- Module      :  System.CWiid
--- Copyright   :  Kiwamu Okabe, Ivan Perez and the cwiid team
--- License     :  GPL-2
+-- Module      : System.CWiid
+-- Copyright   : Kiwamu Okabe, Ivan Perez and the cwiid team
+-- License     : GPL-2
 --
--- Maintainer  :  ivan.perez@keera.co.uk
--- Stability   :  experimental
--- Portability :  unknown
+-- Maintainer  : ivan.perez@keera.co.uk
+-- Stability   : experimental
+-- Portability : unknown
 --
 -- Bindings for the cwiid library, a working userspace driver along with
 -- various applications implementing event drivers, multiple Wiimote
@@ -26,7 +25,6 @@
 --
 -- All in all, the code works quite well and is currently being used to
 -- implement several real games.
-
 module System.CWiid
     (
       -- * Initialization
@@ -285,7 +283,6 @@ cwiidSetLed wm leds = c_cwiid_set_led handle ledUChars
 
 -- | Combine several led flags into one led flag with those leds enabled and
 -- all other leds disabled.
-
 combineCwiidLedFlag :: [CWiidLedFlag] -> CWiidLedFlag
 combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
 
@@ -368,14 +365,14 @@ cwiidIsBtnPushed flags btn =
 --
 -- * TODO: provide a more informative and restrictive interface with exactly
 -- three named Int (byte?) fields.
---
 newtype CWiidAcc = CWiidAcc { unCWiidAcc :: [Int] }
   deriving (Eq, Show)
 
 -- | Obtain accelerometer information.
---   FIXME: read wmgui/main.c:cwiid_acc(1119) to understand how to use this
---   information, what else might need to be exported, and how to calibrate the
---   accelerometers.
+--
+-- FIXME: read wmgui/main.c:cwiid_acc(1119) to understand how to use this
+-- information, what else might need to be exported, and how to calibrate the
+-- accelerometers.
 cwiidGetAcc :: CWiidWiimote -> IO CWiidAcc
 cwiidGetAcc wm =
   alloca $ \wiState -> do
@@ -397,7 +394,7 @@ cwiidGetAcc wm =
 foreign import ccall safe "cwiid_open" c_cwiid_open
   :: Ptr CWiidBdaddr -> CInt -> IO (Ptr ())
 
--- typedef unsigned char             uint8_t
+-- typedef unsigned char uint8_t
 -- int cwiid_set_led(cwiid_wiimote_t *wiimote, uint8_t led)
 foreign import ccall safe "cwiid_set_led" c_cwiid_set_led
   :: Ptr () -> CUChar -> IO CInt
