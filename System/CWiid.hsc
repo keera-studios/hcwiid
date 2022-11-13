@@ -201,9 +201,9 @@ cwiidIrSrcCount :: Int
 cwiidIrSrcCount = (#const CWIID_IR_SRC_COUNT)
 
 -- struct cwiid_ir_src {
--- 	char valid;
--- 	uint16_t pos[2];
--- 	int8_t size;
+--   char valid;
+--   uint16_t pos[2];
+--   int8_t size;
 -- };
 --
 -- The following model is weaker than the counterpart in C (see above). We do
