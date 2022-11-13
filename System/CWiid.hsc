@@ -89,7 +89,7 @@ import Foreign.Storable (Storable (..))
 ---
 
 -- typedef struct {
---         uint8_t b[6];
+--   uint8_t b[6];
 -- } __attribute__((packed)) bdaddr_t;
 -- #define BDADDR_ANY   (&(bdaddr_t) {{0, 0, 0, 0, 0, 0}})
 data CWiidBdaddr = CWiidBdaddr Int Int Int Int Int Int
@@ -142,16 +142,16 @@ cwiidOpen =
 
 {--
 struct cwiid_state {
-        uint8_t rpt_mode;
-        uint8_t led;
-        uint8_t rumble;
-        uint8_t battery;
-        uint16_t buttons;
-        uint8_t acc[3];
-        struct cwiid_ir_src ir_src[CWIID_IR_SRC_COUNT];
-        enum cwiid_ext_type ext_type;
-        union ext_state ext;
-        enum cwiid_error error;
+  uint8_t rpt_mode;
+  uint8_t led;
+  uint8_t rumble;
+  uint8_t battery;
+  uint16_t buttons;
+  uint8_t acc[3];
+  struct cwiid_ir_src ir_src[CWIID_IR_SRC_COUNT];
+  enum cwiid_ext_type ext_type;
+  union ext_state ext;
+  enum cwiid_error error;
 };
 --}
 
@@ -215,12 +215,12 @@ cwiidIrSrcCount = (#const CWIID_IR_SRC_COUNT)
 -- | Internal representation of an infrared point. You should no use it
 --   unless you know what you are doing; use 'CWiidIR' instead.
 data CWiidIRSrc = CWiidIRSrc
-  { cwiidIRSrcValid :: Bool
-  , cwiidIRSrcPosX  :: Int
-  , cwiidIRSrcPosY  :: Int
-  , cwiidIRSrcSize  :: Int
-  }
- deriving Show
+    { cwiidIRSrcValid :: Bool
+    , cwiidIRSrcPosX  :: Int
+    , cwiidIRSrcPosY  :: Int
+    , cwiidIRSrcSize  :: Int
+    }
+  deriving Show
 
 instance Storable CWiidIRSrc where
   sizeOf = const #size struct cwiid_ir_src
@@ -250,7 +250,7 @@ cwiidGetIR wm =
 
 -- * Leds
 newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
-                     deriving (Eq, Show)
+  deriving (Eq, Show)
 
 -- | Flag with exactly led 1 enabled. Use 'combineCwiidLedFlag'
 --   to create flags with several leds enabled.
@@ -278,9 +278,9 @@ newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
 
 -- | Enable/disable certain leds.
 --
---   Use 'cwiidLed1' .. 'cwiidLed4' together with 'combineCwiidLedFlag'
---   to create a flag with just the leds you want enabled and change
---   all at once with one operation.
+-- Use 'cwiidLed1' .. 'cwiidLed4' together with 'combineCwiidLedFlag'
+-- to create a flag with just the leds you want enabled and change
+-- all at once with one operation.
 cwiidSetLed :: CWiidWiimote -> CWiidLedFlag -> IO CInt
 cwiidSetLed wm leds = c_cwiid_set_led handle ledUChars
   where handle    = unCWiidWiimote wm
@@ -295,7 +295,7 @@ combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
 -- * Buttons
 
 newtype CWiidBtnFlag = CWiidBtnFlag { unCWiidBtnFlag :: Int }
-                     deriving (Eq, Show)
+  deriving (Eq, Show)
 #{enum CWiidBtnFlag, CWiidBtnFlag
  , cwiidBtn2     = CWIID_BTN_2
  , cwiidBtn1     = CWIID_BTN_1
@@ -368,7 +368,7 @@ cwiidIsBtnPushed flags btn =
 -- with exactly three named Int (byte?) fields.
 --
 newtype CWiidAcc = CWiidAcc { unCWiidAcc :: [Int] }
- deriving (Eq, Show)
+  deriving (Eq, Show)
 
 -- | Obtain accelerometer information.
 --   FIXME: read wmgui/main.c:cwiid_acc(1119) to understand how to use
