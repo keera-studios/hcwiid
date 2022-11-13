@@ -75,11 +75,11 @@ module System.CWiid
     )
   where
 
-import Data.Bits
-import Foreign.C.Types
-import Foreign.Marshal
-import Foreign.Ptr
-import Foreign.Storable
+import Data.Bits        ((.&.), (.|.))
+import Foreign.C.Types  (CChar (..), CInt (..), CUChar (..), CUShort (..))
+import Foreign.Marshal  (alloca, peekArray, pokeArray)
+import Foreign.Ptr      (Ptr, nullPtr, plusPtr)
+import Foreign.Storable (Storable (..))
 
 #include <cwiid.h>
 
