@@ -75,6 +75,7 @@ module System.CWiid
     )
   where
 
+-- External imports
 import Data.Bits        ((.&.), (.|.))
 import Foreign.C.Types  (CChar (..), CInt (..), CUChar (..), CUShort (..))
 import Foreign.Marshal  (alloca, peekArray, pokeArray)
