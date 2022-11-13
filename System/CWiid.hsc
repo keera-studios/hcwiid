@@ -30,38 +30,39 @@
 -- to implement several real games.
 
 module System.CWiid
-       (
-        -- * Initialization
-        cwiidOpen,
-        CWiidWiimote,
-        -- * State
-        CWiidState(..),
-        -- * Reception mode
-        cwiidSetRptMode,
-        -- * Leds
-        CWiidLedFlag,
-        cwiidLed1,
-        cwiidLed2,
-        cwiidLed3,
-        cwiidLed4,
-        -- ** Led operations
-        cwiidSetLed,
-        combineCwiidLedFlag,
-        -- * Rumble
-        cwiidSetRumble,
-        -- * Buttons
-        cwiidGetBtnState, cwiidIsBtnPushed,
-        cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
-        cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
-        cwiidBtnPlus, combineCwiidBtnFlag, diffCwiidBtnFlag,
-        CWiidBtnFlag(..),
-        -- * Accelerometers
-        cwiidGetAcc,
-        CWiidAcc(..),
-        -- * Infra-red
-        CWiidIRSrc(..),
-        cwiidGetIR
-        ) where
+    (
+     -- * Initialization
+     cwiidOpen,
+     CWiidWiimote,
+     -- * State
+     CWiidState(..),
+     -- * Reception mode
+     cwiidSetRptMode,
+     -- * Leds
+     CWiidLedFlag,
+     cwiidLed1,
+     cwiidLed2,
+     cwiidLed3,
+     cwiidLed4,
+     -- ** Led operations
+     cwiidSetLed,
+     combineCwiidLedFlag,
+     -- * Rumble
+     cwiidSetRumble,
+     -- * Buttons
+     cwiidGetBtnState, cwiidIsBtnPushed,
+     cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus,
+     cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp,
+     cwiidBtnPlus, combineCwiidBtnFlag, diffCwiidBtnFlag,
+     CWiidBtnFlag(..),
+     -- * Accelerometers
+     cwiidGetAcc,
+     CWiidAcc(..),
+     -- * Infra-red
+     CWiidIRSrc(..),
+     cwiidGetIR
+    )
+  where
 
 import Data.Bits
 import Foreign.C.Types
