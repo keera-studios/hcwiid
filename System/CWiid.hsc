@@ -108,14 +108,14 @@ newtype CWiidWiimote = CWiidWiimote { unCWiidWiimote :: Ptr () }
 
 -- | Try to establish a connection to any existing Wiimote using
 -- any existing bluetooth interface.
--- 
+--
 -- The function returns 'Nothing' if there is no bluetooth interface
 -- or if no wiimote can be located. If the connection succeeds,
--- a 'CWiidWiimote' is returned (inside a 'Just'), which can be used to 
+-- a 'CWiidWiimote' is returned (inside a 'Just'), which can be used to
 -- poll the wiimote using other functions.
--- 
+--
 -- There is a default timeout of 5 seconds.
--- 
+--
 -- * TODO: export cwiid_open_time and cwiid_close as well.
 
 -- wiimote = cwiid_open(&bdaddr, 0)))
@@ -145,11 +145,11 @@ struct cwiid_state {
 
 -- | The state of the wiimote. Use 'cwiidSetRptMode' to enable/disable
 -- sensors.
--- 
+--
 -- * FIXME: incomplete state
 -- * FIXME: export get_state
 data CWiidState = CWiidState
-  { rptMode :: Int, led :: Int, rumble :: Int, 
+  { rptMode :: Int, led :: Int, rumble :: Int,
     battery :: Int, buttons :: Int, acc :: [Int]
   , irSrc   :: [CWiidIRSrc]
   }
@@ -167,7 +167,7 @@ instance Storable CWiidState where
     (#poke struct cwiid_state, acc[0]) cwst (fromIntegral ac0 :: CUChar)
     (#poke struct cwiid_state, acc[1]) cwst (fromIntegral ac1 :: CUChar)
     (#poke struct cwiid_state, acc[2]) cwst (fromIntegral ac2 :: CUChar)
-    pokeArray ((#ptr struct cwiid_state, ir_src) cwst) irs 
+    pokeArray ((#ptr struct cwiid_state, ir_src) cwst) irs
   peek cwst = do
     rp <- (#peek struct cwiid_state, rpt_mode) cwst
     l <- (#peek struct cwiid_state, led) cwst
@@ -229,7 +229,7 @@ instance Storable CWiidIRSrc where
                         (fromIntegral (sz :: CChar))
 
 cwiidGetIR :: CWiidWiimote -> IO [CWiidIRSrc]
-cwiidGetIR wm = 
+cwiidGetIR wm =
   alloca $ \wiState -> do
     _ <- c_cwiid_get_state handle wiState
     ws <- peek wiState
@@ -338,10 +338,10 @@ cwiidGetBtnState wm =
 
 -- | Returns 'True' if the button indicated by the flag is pushed,
 -- 'False' otherwise.
--- 
+--
 -- This is a pure function, so the first argument must be the
--- button flags as returned by 'cwiidGetBtnState'. 
-cwiidIsBtnPushed :: CWiidBtnFlag -- ^ The button flags as returned by 'cwiidGetBtnState'. 
+-- button flags as returned by 'cwiidGetBtnState'.
+cwiidIsBtnPushed :: CWiidBtnFlag -- ^ The button flags as returned by 'cwiidGetBtnState'.
                  -> CWiidBtnFlag -- ^ A mask that flags the button/s that we want to check.
                  -> Bool         -- ^ 'True' if they are all pushed, 'False' otherwise.
 cwiidIsBtnPushed flags btn =
@@ -351,7 +351,7 @@ cwiidIsBtnPushed flags btn =
 
 -- | Array of accelerometer information. It will always contain
 -- exactly three elements.
--- 
+--
 -- * TODO: provide a more informative and restrictive interface
 -- with exactly three named Int (byte?) fields.
 --
@@ -369,7 +369,7 @@ cwiidGetAcc wm =
     ws <- peek wiState
     return $ CWiidAcc $ acc ws
       where handle = unCWiidWiimote wm
-  
+
 -- * Low-level bindings to C functions and back
 
 -----------------------------------------------------------------------------
