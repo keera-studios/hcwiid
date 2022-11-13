@@ -9,25 +9,23 @@
 -- Stability   :  experimental
 -- Portability :  unknown
 --
--- Bindings for the cwiid library, a working userspace driver
--- along with various applications implementing event drivers,
--- multiple Wiimote connectivity, gesture recognition, and other
--- Wiimote-based functionality.
+-- Bindings for the cwiid library, a working userspace driver along with
+-- various applications implementing event drivers, multiple Wiimote
+-- connectivity, gesture recognition, and other Wiimote-based functionality.
 --
 -- The current implementation is rather incomplete. In particular:
 --
--- * Some Haskell functions (those related to rpt mode, rumble, leds)
--- had hard-coded values in them. Therefore, they implemented only a
--- very partial interface to their C counterparts. The new versions
--- should be tested and, if any other function is like this,
--- then exported properly.
+-- * Some Haskell functions (those related to rpt mode, rumble, leds) had
+-- hard-coded values in them. Therefore, they implemented only a very partial
+-- interface to their C counterparts. The new versions should be tested and, if
+-- any other function is like this, then exported properly.
 --
 -- * Not all functions/wiimote fields are accessible. In particular,
--- acceleromoter and IR is in testing stage. Nunchuck, calibration,
--- wiimote plus are not handled at all (but will be in the future).
+-- acceleromoter and IR is in testing stage. Nunchuck, calibration, wiimote
+-- plus are not handled at all (but will be in the future).
 --
--- All in all, the code works quite well and is currently being used
--- to implement several real games.
+-- All in all, the code works quite well and is currently being used to
+-- implement several real games.
 
 module System.CWiid
     (
@@ -114,17 +112,17 @@ instance Storable CWiidBdaddr where
 
 -- typedef struct wiimote cwiid_wiimote_t;
 --
--- | A connection to an existing wiimote. Use 'cwiidOpen' to
--- connect to a wiimote and obtain one of these.
+-- | A connection to an existing wiimote. Use 'cwiidOpen' to connect to a
+-- wiimote and obtain one of these.
 newtype CWiidWiimote = CWiidWiimote { unCWiidWiimote :: Ptr () }
 
--- | Try to establish a connection to any existing Wiimote using
--- any existing bluetooth interface.
+-- | Try to establish a connection to any existing Wiimote using any existing
+-- bluetooth interface.
 --
--- The function returns 'Nothing' if there is no bluetooth interface
--- or if no wiimote can be located. If the connection succeeds,
--- a 'CWiidWiimote' is returned (inside a 'Just'), which can be used to
--- poll the wiimote using other functions.
+-- The function returns 'Nothing' if there is no bluetooth interface or if no
+-- wiimote can be located. If the connection succeeds, a 'CWiidWiimote' is
+-- returned (inside a 'Just'), which can be used to poll the wiimote using
+-- other functions.
 --
 -- There is a default timeout of 5 seconds.
 --
@@ -153,8 +151,7 @@ cwiidOpen =
 --   enum cwiid_error error;
 -- };
 
--- | The state of the wiimote. Use 'cwiidSetRptMode' to enable/disable
--- sensors.
+-- | The state of the wiimote. Use 'cwiidSetRptMode' to enable/disable sensors.
 --
 -- * FIXME: incomplete state
 -- * FIXME: export get_state
@@ -195,8 +192,8 @@ instance Storable CWiidState where
 
 -- * Infrared
 
--- | Maximum number of infrared points detected.
---   By default (according to cwiid) it should be 4.
+-- | Maximum number of infrared points detected. By default (according to
+-- cwiid) it should be 4.
 cwiidIrSrcCount :: Int
 cwiidIrSrcCount = (#const CWIID_IR_SRC_COUNT)
 
@@ -207,11 +204,11 @@ cwiidIrSrcCount = (#const CWIID_IR_SRC_COUNT)
 -- };
 --
 -- The following model is weaker than the counterpart in C (see above). We do
--- so in order to provide something more "natural" in Haskell, but it might
--- be better to use a more precise datatype.
+-- so in order to provide something more "natural" in Haskell, but it might be
+-- better to use a more precise datatype.
 
--- | Internal representation of an infrared point. You should no use it
---   unless you know what you are doing; use 'CWiidIR' instead.
+-- | Internal representation of an infrared point. You should no use it unless
+-- you know what you are doing; use 'CWiidIR' instead.
 data CWiidIRSrc = CWiidIRSrc
     { cwiidIRSrcValid :: Bool
     , cwiidIRSrcPosX  :: Int
@@ -251,43 +248,43 @@ cwiidGetIR wm =
 newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
   deriving (Eq, Show)
 
--- | Flag with exactly led 1 enabled. Use 'combineCwiidLedFlag'
---   to create flags with several leds enabled.
+-- | Flag with exactly led 1 enabled. Use 'combineCwiidLedFlag' to create flags
+-- with several leds enabled.
 #{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed1 = CWIID_LED1_ON
  }
 
--- | Flag with exactly led 2 enabled. Use 'combineCwiidLedFlag'
---   to create flags with several leds enabled.
+-- | Flag with exactly led 2 enabled. Use 'combineCwiidLedFlag' to create flags
+-- with several leds enabled.
 #{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed2 = CWIID_LED2_ON
  }
 
--- | Flag with exactly led 2 enabled. Use 'combineCwiidLedFlag'
---   to create flags with several leds enabled.
+-- | Flag with exactly led 2 enabled. Use 'combineCwiidLedFlag' to create flags
+-- with several leds enabled.
 #{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed3 = CWIID_LED3_ON
  }
 
--- | Flag with exactly led 4 enabled. Use 'combineCwiidLedFlag'
---   to create flags with several leds enabled.
+-- | Flag with exactly led 4 enabled. Use 'combineCwiidLedFlag' to create flags
+-- with several leds enabled.
 #{enum CWiidLedFlag, CWiidLedFlag
  , cwiidLed4 = CWIID_LED4_ON
  }
 
 -- | Enable/disable certain leds.
 --
--- Use 'cwiidLed1' .. 'cwiidLed4' together with 'combineCwiidLedFlag'
--- to create a flag with just the leds you want enabled and change
--- all at once with one operation.
+-- Use 'cwiidLed1' .. 'cwiidLed4' together with 'combineCwiidLedFlag' to create
+-- a flag with just the leds you want enabled and change all at once with one
+-- operation.
 cwiidSetLed :: CWiidWiimote -> CWiidLedFlag -> IO CInt
 cwiidSetLed wm leds = c_cwiid_set_led handle ledUChars
   where
     handle    = unCWiidWiimote wm
     ledUChars = fromIntegral (unCWiidLedFlag leds)
 
--- | Combine several led flags into one led flag with those leds
---   enabled and all other leds disabled.
+-- | Combine several led flags into one led flag with those leds enabled and
+-- all other leds disabled.
 
 combineCwiidLedFlag :: [CWiidLedFlag] -> CWiidLedFlag
 combineCwiidLedFlag = CWiidLedFlag . foldr ((.|.) . unCWiidLedFlag) 0
@@ -321,13 +318,11 @@ diffCwiidBtnFlag a b = CWiidBtnFlag $ ai - (ai .&. bi)
 
 -- * Reception mode
 
--- | Reception modes that select which sensors/wiimote activity
--- we listen to.
+-- | Reception modes that select which sensors/wiimote activity we listen to.
 newtype CWiidRptMode = CWiidRptMode { unCWiidRptMode :: CUChar }
   deriving (Eq, Show)
 
--- | Enable/disable reception of certain sensors.
--- Use 2 to enable buttons.
+-- | Enable/disable reception of certain sensors.  Use 2 to enable buttons.
 cwiidSetRptMode :: CWiidWiimote -> CUChar -> IO CInt
 cwiidSetRptMode wm u = c_cwiid_set_rpt_mode handle u -- set BTN
   where
@@ -352,32 +347,35 @@ cwiidGetBtnState wm =
       where
         handle = unCWiidWiimote wm
 
--- | Returns 'True' if the button indicated by the flag is pushed,
--- 'False' otherwise.
+-- | Returns 'True' if the button indicated by the flag is pushed, 'False'
+-- otherwise.
 --
--- This is a pure function, so the first argument must be the
--- button flags as returned by 'cwiidGetBtnState'.
-cwiidIsBtnPushed :: CWiidBtnFlag -- ^ The button flags as returned by 'cwiidGetBtnState'.
-                 -> CWiidBtnFlag -- ^ A mask that flags the button/s that we want to check.
-                 -> Bool         -- ^ 'True' if they are all pushed, 'False' otherwise.
+-- This is a pure function, so the first argument must be the button flags as
+-- returned by 'cwiidGetBtnState'.
+cwiidIsBtnPushed :: CWiidBtnFlag
+                    -- ^ The button flags as returned by 'cwiidGetBtnState'.
+                 -> CWiidBtnFlag
+                    -- ^ A mask that flags the button/s that we want to check.
+                 -> Bool
+                    -- ^ 'True' if they are all pushed, 'False' otherwise.
 cwiidIsBtnPushed flags btn =
   unCWiidBtnFlag flags .&. unCWiidBtnFlag btn == unCWiidBtnFlag btn
 
 -- * Accelerometres
 
--- | Array of accelerometer information. It will always contain
--- exactly three elements.
+-- | Array of accelerometer information. It will always contain exactly three
+-- elements.
 --
--- * TODO: provide a more informative and restrictive interface
--- with exactly three named Int (byte?) fields.
+-- * TODO: provide a more informative and restrictive interface with exactly
+-- three named Int (byte?) fields.
 --
 newtype CWiidAcc = CWiidAcc { unCWiidAcc :: [Int] }
   deriving (Eq, Show)
 
 -- | Obtain accelerometer information.
---   FIXME: read wmgui/main.c:cwiid_acc(1119) to understand how to use
---   this information, what else might need to be exported, and how
---   to calibrate the accelerometers.
+--   FIXME: read wmgui/main.c:cwiid_acc(1119) to understand how to use this
+--   information, what else might need to be exported, and how to calibrate the
+--   accelerometers.
 cwiidGetAcc :: CWiidWiimote -> IO CWiidAcc
 cwiidGetAcc wm =
   alloca $ \wiState -> do
