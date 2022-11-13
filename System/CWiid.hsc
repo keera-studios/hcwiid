@@ -63,7 +63,6 @@ module System.CWiid
         cwiidGetIR
         ) where
 
--- import Foreign.C.Error
 import Data.Bits
 import Foreign.C.Types
 import Foreign.Marshal
