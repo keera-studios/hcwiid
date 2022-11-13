@@ -50,10 +50,21 @@ module System.CWiid
       -- * Rumble
     , cwiidSetRumble
       -- * Buttons
-    , cwiidGetBtnState, cwiidIsBtnPushed
-    , cwiidBtn2, cwiidBtn1, cwiidBtnB, cwiidBtnA, cwiidBtnMinus
-    , cwiidBtnHome, cwiidBtnLeft, cwiidBtnRight, cwiidBtnDown, cwiidBtnUp
-    , cwiidBtnPlus, combineCwiidBtnFlag, diffCwiidBtnFlag
+    , cwiidGetBtnState
+    , cwiidIsBtnPushed
+    , cwiidBtn1
+    , cwiidBtn2
+    , cwiidBtnA
+    , cwiidBtnB
+    , cwiidBtnPlus
+    , cwiidBtnMinus
+    , cwiidBtnHome
+    , cwiidBtnLeft
+    , cwiidBtnRight
+    , cwiidBtnDown
+    , cwiidBtnUp
+    , combineCwiidBtnFlag
+    , diffCwiidBtnFlag
     , CWiidBtnFlag(..)
       -- * Accelerometers
     , cwiidGetAcc
