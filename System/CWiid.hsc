@@ -244,7 +244,8 @@ cwiidGetIR wm =
     _ <- c_cwiid_get_state handle wiState
     ws <- peek wiState
     return (irSrc ws)
-      where handle = unCWiidWiimote wm
+      where
+        handle = unCWiidWiimote wm
 
 -- * Leds
 newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
@@ -281,8 +282,9 @@ newtype CWiidLedFlag = CWiidLedFlag { unCWiidLedFlag :: Int }
 -- all at once with one operation.
 cwiidSetLed :: CWiidWiimote -> CWiidLedFlag -> IO CInt
 cwiidSetLed wm leds = c_cwiid_set_led handle ledUChars
-  where handle    = unCWiidWiimote wm
-        ledUChars = fromIntegral (unCWiidLedFlag leds)
+  where
+    handle    = unCWiidWiimote wm
+    ledUChars = fromIntegral (unCWiidLedFlag leds)
 
 -- | Combine several led flags into one led flag with those leds
 --   enabled and all other leds disabled.
@@ -313,8 +315,9 @@ combineCwiidBtnFlag = CWiidBtnFlag . foldr ((.|.) . unCWiidBtnFlag) 0
 
 diffCwiidBtnFlag :: CWiidBtnFlag -> CWiidBtnFlag -> CWiidBtnFlag
 diffCwiidBtnFlag a b = CWiidBtnFlag $ ai - (ai .&. bi)
-  where ai = unCWiidBtnFlag a
-        bi = unCWiidBtnFlag b
+  where
+    ai = unCWiidBtnFlag a
+    bi = unCWiidBtnFlag b
 
 -- * Reception mode
 
@@ -327,13 +330,15 @@ newtype CWiidRptMode = CWiidRptMode { unCWiidRptMode :: CUChar }
 -- Use 2 to enable buttons.
 cwiidSetRptMode :: CWiidWiimote -> CUChar -> IO CInt
 cwiidSetRptMode wm u = c_cwiid_set_rpt_mode handle u -- set BTN
-  where handle = unCWiidWiimote wm
+  where
+    handle = unCWiidWiimote wm
 
 -- * Rumble
 
 cwiidSetRumble :: CWiidWiimote -> CUChar -> IO CInt
 cwiidSetRumble wm rm = c_cwiid_set_rumble handle rm
-  where handle = unCWiidWiimote wm
+  where
+    handle = unCWiidWiimote wm
 
 -- * Buttons
 
@@ -344,7 +349,8 @@ cwiidGetBtnState wm =
     _ <- c_cwiid_get_state handle wiState
     ws <- peek wiState
     return $ CWiidBtnFlag $ buttons ws
-      where handle = unCWiidWiimote wm
+      where
+        handle = unCWiidWiimote wm
 
 -- | Returns 'True' if the button indicated by the flag is pushed,
 -- 'False' otherwise.
@@ -378,7 +384,8 @@ cwiidGetAcc wm =
     _ <- c_cwiid_get_state handle wiState
     ws <- peek wiState
     return $ CWiidAcc $ acc ws
-      where handle = unCWiidWiimote wm
+      where
+        handle = unCWiidWiimote wm
 
 -- * Low-level bindings to C functions and back
 
