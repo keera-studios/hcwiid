@@ -140,20 +140,18 @@ cwiidOpen =
       then return Nothing
       else return $ Just $ CWiidWiimote handle
 
-{--
-struct cwiid_state {
-  uint8_t rpt_mode;
-  uint8_t led;
-  uint8_t rumble;
-  uint8_t battery;
-  uint16_t buttons;
-  uint8_t acc[3];
-  struct cwiid_ir_src ir_src[CWIID_IR_SRC_COUNT];
-  enum cwiid_ext_type ext_type;
-  union ext_state ext;
-  enum cwiid_error error;
-};
---}
+-- struct cwiid_state {
+--   uint8_t rpt_mode;
+--   uint8_t led;
+--   uint8_t rumble;
+--   uint8_t battery;
+--   uint16_t buttons;
+--   uint8_t acc[3];
+--   struct cwiid_ir_src ir_src[CWIID_IR_SRC_COUNT];
+--   enum cwiid_ext_type ext_type;
+--   union ext_state ext;
+--   enum cwiid_error error;
+-- };
 
 -- | The state of the wiimote. Use 'cwiidSetRptMode' to enable/disable
 -- sensors.
